@@ -1,0 +1,3 @@
+#!/bin/bash -e
+
+exec bash -c "g++ main.cpp && ./a.out $* && rm a.out"
