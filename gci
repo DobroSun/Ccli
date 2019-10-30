@@ -1,3 +1,5 @@
 #!/bin/bash -e
+CC=$(which gcc)
+CXX=$(which g++)
 
-exec bash -c "g++ main.cpp && ./a.out $* && rm a.out"
+exec bash -c "$CXX src/main.cpp && ./a.out $* && rm a.out"
