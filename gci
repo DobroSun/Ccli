@@ -2,4 +2,5 @@
 CC=$(which gcc)
 CXX=$(which g++)
 
-exec bash -c "$CXX src/main.cpp && ./a.out $* && rm a.out"
+cd src/
+exec bash -c "$CXX -pthread test.cpp && ./a.out $* && rm a.out"
