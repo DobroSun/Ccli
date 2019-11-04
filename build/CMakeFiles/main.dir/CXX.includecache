@@ -37,11 +37,15 @@ stdexcept
 -
 memory
 -
+cstring
+-
 array
 -
 list
 -
 readline/readline.h
+-
+readline/history.h
 -
 ccli/Utils.hpp
 /c_repl/src/ccli/Utils.hpp

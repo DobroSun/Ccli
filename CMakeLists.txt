@@ -10,10 +10,8 @@ target_include_directories(
         ${PROJECT_SOURCE_DIR}/include
 )
 
-target_compile_options(
-	libs PRIVATE
-    -std=c++11
-)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 add_executable(main src/main.cpp src/Utils.cpp)
-target_link_libraries(main libs)
+target_link_libraries(main libs readline)
+

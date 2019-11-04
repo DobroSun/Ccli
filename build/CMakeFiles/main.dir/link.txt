@@ -1,1 +1,1 @@
-/usr/bin/c++     CMakeFiles/main.dir/src/main.cpp.o CMakeFiles/main.dir/src/Utils.cpp.o  -o main liblibs.a 
+/usr/bin/c++   -Wall   CMakeFiles/main.dir/src/main.cpp.o CMakeFiles/main.dir/src/Utils.cpp.o  -o main liblibs.a -lreadline 

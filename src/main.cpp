@@ -7,16 +7,16 @@
 #include <cstdio>
 #include <stdexcept>
 #include <memory>
+#include <cstring>
 #include <array>
 #include <list>
 #include <readline/readline.h>
+#include <readline/history.h>
 
 #include "ccli/Utils.hpp"
 
 #define TMP_FILE "../tmp/tmp.cpp"
 #define TMP_DIR "../tmp/"
-
-static bool is_interrupted = false;
 
 
 template<typename T>
@@ -25,7 +25,7 @@ class th_safe_queue {
     std::queue<T> elements;
 public: 
     bool empty() {
-        this->elements.empty();
+        return this->elements.empty();
     }
     void push(T&& value) {
         std::lock_guard<std::mutex> lock(this->_lock);
@@ -48,6 +48,7 @@ public:
 
 std::string welcome() {
     std::string welcome("Hello world");
+    welcome += "> ";
     return welcome;
 }
 
@@ -101,25 +102,26 @@ int main(int argc, char* argv[]) {
 
 	// handle Ctrl-C interruption
     struct sigaction act;
-    act.sa_handler = [](int sig){ std::cout << "\n"; is_interrupted = true;};
+    act.sa_handler = [](int sig){
+                        std::cout << "\n";
+                        rl_on_new_line();
+                        rl_replace_line("", 0);
+                        rl_redisplay();
+                     };
     sigaction(SIGINT, &act, NULL);
     
 	while (1) {
-        std::cout << welcome() << "> ";
+        const char *line = readline(welcome().c_str());
 
-        std::string line = readline("");
-        std::cout << line << std::endl;
-        //std::getline(std::cin, line);
-        if (is_interrupted) {is_interrupted = false; std::cin.clear(); continue;}
-        if (std::cin.eof()) {std::cout << "\n"; close_all(&tmp_file); exit(0);}
-        if (line.empty()) continue;
+        if (line == NULL) {std::cout << "\n"; close_all(&tmp_file); exit(0);}
+        if (!std::strcmp(line, "")) continue;
 
-        history.update_history(line);
 
         // Shit
 		std::remove(TMP_FILE);
 		std::ofstream tmp_file(TMP_FILE);
 
+        add_history(line);
         //write_cmds_to_file
         write_cmds_to_file(tmp_file, line);
         std::string result = compile_and_run(tmp_file);

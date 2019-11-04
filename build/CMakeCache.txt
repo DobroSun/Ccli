@@ -196,6 +196,9 @@ lib_LIB_DEPENDS:STATIC=
 //Dependencies for target
 libs_LIB_DEPENDS:STATIC=
 
+//Dependencies for target
+readline_LIB_DEPENDS:STATIC=
+
 
 ########################
 # INTERNAL cache entries
