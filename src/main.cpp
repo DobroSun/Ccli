@@ -1,17 +1,23 @@
 #include <iostream>
-#include <functional>
 #include <string>
 #include <csignal>
 #include <queue>
 #include <mutex>
-#include <thread>
 #include <fstream>
+#include <cstdio>
+#include <stdexcept>
+#include <memory>
+#include <array>
+#include <list>
+#include <readline/readline.h>
 
+#include "ccli/Utils.hpp"
 
-class StructWriter;
-class CommandWriter;
+#define TMP_FILE "../tmp/tmp.cpp"
+#define TMP_DIR "../tmp/"
 
 static bool is_interrupted = false;
+
 
 template<typename T>
 class th_safe_queue {
@@ -40,82 +46,6 @@ public:
     }
 };
 
-class IManager {
-    std::ofstream *tmp_file;
-    StructWriter s_writer;
-public:
-    IManager(std::ofstream *tmp_file) {
-        this->tmp_file = tmp_file;
-        this->s_writer = new StructWriter();
-        this->c_writer = new CommandWriter();
-    }
-    bool write_to_file(std::string *line) {
-        if (line[0] == ":") {
-            std::cout << "Can't handler this yet\n";
-        } else if (line[0] == "|") {
-            return s_writer.write(line);
-        } else {
-            return c_writer.write(line);
-        }
-    }
-};
-
-class Executor {
-    th_safe_queue<bool> *bool_q;
-    std::ofstream *tmp_file;
-public:
-    Executor(th_safe_queue<bool> *q) {
-        this->bool_q = q;
-    }
-    void operator()() {
-        // compile first time
-        while (1) {
-            if (!this->bool_q->get()) std::cout << "Exception in Handler\n";
-            this->compile();
-            
-            std::string res = this->execute();
-        }
-    }
-    void compile() {
-        //
-    }
-    std::string execute() {
-    }
-};
-
-class Handler {
-    th_safe_queue<std::string *> *from_main;
-    th_safe_queue<std::string *> *to_main;
-    th_safe_queue<bool> *bool_q;
-    std::ofstream *tmp_file;
-    std::string *cmd;
-
-    IManager *i_manager;
-public:
-    Handler(auto *from_main_q, auto *to_main_q, auto *b_q, std::ofstream *tmp_file) {
-        this->from_main = from_main_q;
-        this->to_main = to_main_q;
-        this->bool_q = b_q;
-        this->tmp_file = tmp_file;
-
-        this->i_manager = new IManager(tmp_file);
-    }
-    ~Handler() {
-        delete this->i_manager;
-    }
-    void operator()() {
-        while (1) {
-            this->get_from_q();
-
-            bool is_success = i_manager->write_to_file(this->cmd);
-            this->bool_q->push(&is_success);
-        }
-    }
-    void get_from_q() {
-        this->cmd = this->from_main->get();
-    }
-};
-
 std::string welcome() {
     std::string welcome("Hello world");
     return welcome;
@@ -125,65 +55,76 @@ void load_file(char *filename) {
     std::cout << "Loading " << filename << "\n";
 }
 
-void handle_ctrl_c(int sig) {
-    std::cout << "\n";
-    is_interrupted = true;
+void close_all(std::ofstream *tmp_file) {
+    tmp_file->close();
 }
 
-void send_on_handling(th_safe_queue<std::string *> &send_q, std::string &line) {
-    send_q.push(&line);
+void write_cmds_to_file(std::ofstream &tmp_file, std::string cmd="", std::string pre_cmd="") {
+	tmp_file << "#include <iostream>\n";
+    tmp_file << pre_cmd << "\n";
+    tmp_file << "int main() {\n";
+	tmp_file << "std::cout << ";
+    tmp_file << cmd << " << std::endl;";
+    tmp_file << "\n";
+    tmp_file << "return 0;\n";
+    tmp_file << "}";
+	tmp_file.flush();
 }
 
-std::string *get_result(th_safe_queue<std::string *> &get_q) {
-    return get_q.get();
-}
+std::string compile_and_run(std::ofstream &tmp_file) {
+	std::string cmd("cd ");
+    cmd += TMP_DIR; cmd += ";g++ "; cmd += TMP_FILE; cmd += " && "; cmd += "./a.out";
 
-void init_file(std::ofstream *tmp_file) {
-    *tmp_file << "int main() {\n";
-    *tmp_file << "\n";
-    *tmp_file << "return 0;";
-    *tmp_file << "}";
-}
-
-void close_all() {
-    //join threads
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("Compilation error");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != NULL) {
+        result += buffer.data();
+    }
+    return result;
 }
 
 int main(int argc, char* argv[]) {
+    History history = History();
+
     if (argc > 1) {
         load_file(argv[1]);
     }
-    std::string line;
-    th_safe_queue<std::string *> send_q;
-    th_safe_queue<std::string *> get_q; 
-    th_safe_queue<bool> access_q; 
     
-    std::ofstream tmp_file("exec.cpp");
-    init_file(&tmp_file);
-
-    Handler handler = Handler(&send_q, &get_q, &access_q, &tmp_file);
-
-    std::thread t1(handler);
+    std::ofstream tmp_file(TMP_FILE);
+    if (!tmp_file) {
+        std::cout << "No tmp_file!\n";
+    }
 
 	// handle Ctrl-C interruption
     struct sigaction act;
-    act.sa_handler = handle_ctrl_c;
+    act.sa_handler = [](int sig){ std::cout << "\n"; is_interrupted = true;};
     sigaction(SIGINT, &act, NULL);
     
 	while (1) {
-        std::cout << welcome() << ">";
+        std::cout << welcome() << "> ";
 
-        std::getline(std::cin, line);
+        std::string line = readline("");
+        std::cout << line << std::endl;
+        //std::getline(std::cin, line);
         if (is_interrupted) {is_interrupted = false; std::cin.clear(); continue;}
-        if (std::cin.eof()) {std::cout << "\n"; close_all(); exit(0);}
+        if (std::cin.eof()) {std::cout << "\n"; close_all(&tmp_file); exit(0);}
         if (line.empty()) continue;
 
-        send_on_handling(send_q, line);
+        history.update_history(line);
 
-        std::string *res = get_result(get_q);
+        // Shit
+		std::remove(TMP_FILE);
+		std::ofstream tmp_file(TMP_FILE);
 
-        std::cout << *res << "\n";
+        //write_cmds_to_file
+        write_cmds_to_file(tmp_file, line);
+        std::string result = compile_and_run(tmp_file);
+
+        std::cout << result;
     }
-    t1.join();
     return 0;
 }

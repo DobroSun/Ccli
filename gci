@@ -1,6 +1,10 @@
 #!/bin/bash -e
 CC=$(which gcc)
 CXX=$(which g++)
+DIR=$(pwd)
 
-cd src/
-exec bash -c "$CXX -pthread test.cpp && ./a.out $* && rm a.out"
+mkdir -p build
+cd build/
+cmake .. > /dev/null
+make > /dev/null
+exec bash -c "./main"

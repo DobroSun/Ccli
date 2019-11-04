@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/ccli/Utils.hpp
+
+/c_repl/src/Utils.cpp
+string
+-
+iostream
+-
+list
+-
+ccli/Utils.hpp
+/c_repl/src/ccli/Utils.hpp
+
