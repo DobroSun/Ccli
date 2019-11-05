@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblibs.a  CMakeFiles/libs.dir/src/Utils.cpp.o
-/usr/bin/ranlib liblibs.a

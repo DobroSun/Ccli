@@ -14,6 +14,7 @@
 #include <readline/history.h>
 
 #include "ccli/Utils.hpp"
+#include "ccli/IWriters.hpp"
 
 #define TMP_FILE "../tmp/tmp.cpp"
 #define TMP_DIR "../tmp/"
@@ -60,18 +61,6 @@ void close_all(std::ofstream *tmp_file) {
     tmp_file->close();
 }
 
-void write_cmds_to_file(std::ofstream &tmp_file, std::string cmd="", std::string pre_cmd="") {
-	tmp_file << "#include <iostream>\n";
-    tmp_file << pre_cmd << "\n";
-    tmp_file << "int main() {\n";
-	tmp_file << "std::cout << ";
-    tmp_file << cmd << " << std::endl;";
-    tmp_file << "\n";
-    tmp_file << "return 0;\n";
-    tmp_file << "}";
-	tmp_file.flush();
-}
-
 std::string compile_and_run(std::ofstream &tmp_file) {
 	std::string cmd("cd ");
     cmd += TMP_DIR; cmd += ";g++ "; cmd += TMP_FILE; cmd += " && "; cmd += "./a.out";
@@ -89,11 +78,11 @@ std::string compile_and_run(std::ofstream &tmp_file) {
 }
 
 int main(int argc, char* argv[]) {
-    History history = History();
-
     if (argc > 1) {
         load_file(argv[1]);
     }
+
+    IManager i_manager;
     
     std::ofstream tmp_file(TMP_FILE);
     if (!tmp_file) {
@@ -122,10 +111,12 @@ int main(int argc, char* argv[]) {
 		std::ofstream tmp_file(TMP_FILE);
 
         add_history(line);
-        //write_cmds_to_file
-        write_cmds_to_file(tmp_file, line);
-        std::string result = compile_and_run(tmp_file);
 
+
+        i_manager.analise_input(line);
+        i_manager.make_file(tmp_file);
+
+        std::string result = compile_and_run(tmp_file);
         std::cout << result;
     }
     return 0;
