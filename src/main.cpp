@@ -15,6 +15,7 @@
 
 #include "ccli/Utils.hpp"
 #include "ccli/IWriters.hpp"
+#include "ccli/CompileExec.hpp"
 
 #define TMP_FILE "../tmp/tmp.cpp"
 #define TMP_DIR "../tmp/"
@@ -61,7 +62,7 @@ void close_all(std::ofstream *tmp_file) {
     tmp_file->close();
 }
 
-std::string compile_and_run(std::ofstream &tmp_file) {
+std::string compile_and_run() {
 	std::string cmd("cd ");
     cmd += TMP_DIR; cmd += ";g++ "; cmd += TMP_FILE; cmd += " && "; cmd += "./a.out";
 
@@ -83,6 +84,8 @@ int main(int argc, char* argv[]) {
     }
 
     IManager i_manager;
+    Compiler compiler;
+    Executor executor;
     
     std::ofstream tmp_file(TMP_FILE);
     if (!tmp_file) {
@@ -116,7 +119,15 @@ int main(int argc, char* argv[]) {
         i_manager.analise_input(line);
         i_manager.make_file(tmp_file);
 
-        std::string result = compile_and_run(tmp_file);
+
+        std::string res_comp = compiler.compile();
+        std::string res_exe = "";
+
+        if (compiler.is_compiled) {
+            res_exe = executor.execute();
+        }
+
+        std::string result = res_comp + res_exe;
         std::cout << result;
     }
     return 0;

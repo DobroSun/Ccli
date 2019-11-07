@@ -1,7 +1,10 @@
+#ifndef IWRITERSCPP
+#define IWRITERSCPP
+
 //class Pre_Writer;
 
 class Exe_Writer { 
-    std::vector<std::string> commands;
+    std::array<std::string, 1> commands;
 public:
     Exe_Writer();
     std::string get_commands();
@@ -27,3 +30,4 @@ public:
     void make_file(std::ofstream &tmp_file);
     void analise_input(std::string cmd);
 };
+#endif

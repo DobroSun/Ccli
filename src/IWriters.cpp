@@ -1,4 +1,5 @@
 #include <vector>
+#include <array>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -9,20 +10,18 @@ Exe_Writer::Exe_Writer() {
 }
 
 std::string Exe_Writer::get_commands() {
+    if (commands[0].empty()) return "";
     std::string cmd;
-    if (commands.empty()) {
-        return "";
-    }
     cmd += "std::cout << ";
-    cmd += commands.back();
+    cmd += commands[0];
     cmd += " << std::endl;";
 
-    commands.pop_back();
+    commands[0] = "";
     return cmd;
 }
 
 void Exe_Writer::put_command(std::string cmd) {
-    commands.push_back(cmd);
+    commands[0] = cmd;
 }
 
 
@@ -38,6 +37,7 @@ std::string Norm_Writer::get_commands() {
 }
 
 void Norm_Writer::put_command(std::string cmd) {
+    // Actually don't have to push if error
     commands.push_back(cmd);
 }
 

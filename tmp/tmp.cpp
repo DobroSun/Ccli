@@ -1,2 +1,2 @@
 #include <iostream>
-int main() {l;l;l;l;l;fdasl;kfjads;fjdsafsl;fdsklfjsdl;fdslaafklsa;;return 0;}
+int main() {jl;;return 0;}
