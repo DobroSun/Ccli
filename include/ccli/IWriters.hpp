@@ -1,5 +1,5 @@
-#ifndef IWRITERSCPP
-#define IWRITERSCPP
+#ifndef IWRITERS_CPP
+#define IWRITERS_CPP
 
 //class Pre_Writer;
 
@@ -18,6 +18,8 @@ public:
     Norm_Writer();
     std::string get_commands();
     void put_command(std::string cmd);
+    void delete_command();
+    void delete_if_not_definition(std::string cmd);
 };
 
 
@@ -29,5 +31,7 @@ public:
     IManager();
     void make_file(std::ofstream &tmp_file);
     void analise_input(std::string cmd);
+    void remove_error(std::string cmd);
+    void remove_command(std::string cmd);
 };
 #endif

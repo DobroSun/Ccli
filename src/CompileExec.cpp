@@ -19,7 +19,7 @@ std::string Compiler::compile() {
     std::string result = "";
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
-        throw std::runtime_error("Compilation error");
+        throw std::runtime_error("Compilation popen error");
     }
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != NULL) {
         result += buffer.data();
@@ -44,7 +44,7 @@ std::string Executor::execute() {
     std::string result = "";
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
-        throw std::runtime_error("Compilation error");
+        throw std::runtime_error("Execution popen error");
     }
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != NULL) {
         result += buffer.data();

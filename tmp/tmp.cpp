@@ -1,2 +1,2 @@
 #include <iostream>
-int main() {jl;;return 0;}
+int main() {int a = 23;std::cout << dls << std::endl;;return 0;}

@@ -7,6 +7,7 @@
 #include "ccli/IWriters.hpp"
 
 Exe_Writer::Exe_Writer() {
+    std::array<std::string, 1> commands;
 }
 
 std::string Exe_Writer::get_commands() {
@@ -26,6 +27,7 @@ void Exe_Writer::put_command(std::string cmd) {
 
 
 Norm_Writer::Norm_Writer() {
+    std::vector<std::string> commands;
 }
 
 std::string Norm_Writer::get_commands() {
@@ -37,8 +39,20 @@ std::string Norm_Writer::get_commands() {
 }
 
 void Norm_Writer::put_command(std::string cmd) {
-    // Actually don't have to push if error
     commands.push_back(cmd);
+}
+
+void Norm_Writer::delete_command() {
+    if (commands.size() > 0) {
+        commands.pop_back();
+    }
+}
+
+void Norm_Writer::delete_if_not_definition(std::string cmd) {
+    int found = cmd.find("=");
+    if (found == -1 && commands.size() > 0) {
+        commands.pop_back();
+    }
 }
 
 IManager::IManager() {
@@ -66,9 +80,24 @@ void IManager::make_file(std::ofstream &tmp_file) {
 }
 
 void IManager::analise_input(std::string cmd) {
+    
     if (cmd.compare(cmd.size() - 1, 1, ";") == 0) {
         norm_writer.put_command(cmd);
     } else {
         exe_writer.put_command(cmd);
+    }
+}
+
+void IManager::remove_error(std::string cmd) {
+    if (cmd.compare(cmd.size() - 1, 1, ";") == 0) {
+        norm_writer.delete_command();
+    } else {
+        // pre_command
+    }
+}
+
+void IManager::remove_command(std::string cmd) {
+    if (cmd.compare(cmd.size() - 1, 1, ";") == 0) {
+        norm_writer.delete_if_not_definition(cmd);
     }
 }

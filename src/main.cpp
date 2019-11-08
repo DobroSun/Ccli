@@ -13,7 +13,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "ccli/Utils.hpp"
 #include "ccli/IWriters.hpp"
 #include "ccli/CompileExec.hpp"
 
@@ -60,22 +59,6 @@ void load_file(char *filename) {
 
 void close_all(std::ofstream *tmp_file) {
     tmp_file->close();
-}
-
-std::string compile_and_run() {
-	std::string cmd("cd ");
-    cmd += TMP_DIR; cmd += ";g++ "; cmd += TMP_FILE; cmd += " && "; cmd += "./a.out";
-
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("Compilation error");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != NULL) {
-        result += buffer.data();
-    }
-    return result;
 }
 
 int main(int argc, char* argv[]) {
@@ -125,6 +108,9 @@ int main(int argc, char* argv[]) {
 
         if (compiler.is_compiled) {
             res_exe = executor.execute();
+            i_manager.remove_command(line);
+        } else {
+            i_manager.remove_error(line);
         }
 
         std::string result = res_comp + res_exe;

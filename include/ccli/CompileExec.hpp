@@ -1,5 +1,5 @@
-#ifndef COMPILEEXECCPP
-#define COMPILEEXECCPP
+#ifndef COMPILEEXEC_CPP
+#define COMPILEEXEC_CPP
 
 class Compiler {
 public:
