@@ -66,7 +66,9 @@ int main(int argc, char* argv[]) {
         load_file(argv[1]);
     }
 
+    std::cout << "Gonna initialize manager" << std::endl;
     IManager i_manager;
+    std::cout << "Gonna initialize compiler" << std::endl;
     Compiler compiler;
     Executor executor;
     
@@ -103,8 +105,12 @@ int main(int argc, char* argv[]) {
         i_manager.make_file(tmp_file);
 
 
-        std::string res_comp = compiler.compile();
         std::string res_exe = "";
+        std::string res_comp = "";
+        if (!i_manager.is_opened_pars()) {
+            std::cout << i_manager.is_opened_pars() << std::endl;
+            res_comp = compiler.compile();
+        }
 
         if (compiler.is_compiled) {
             res_exe = executor.execute();

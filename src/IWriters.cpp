@@ -6,6 +6,20 @@
 
 #include "ccli/IWriters.hpp"
 
+
+bool endswith(std::string cmd, std::string ch) {
+    return (cmd.size() > ch.size() &&  cmd.compare(cmd.size() - ch.size(), ch.size(), ch) == 0);
+}
+
+bool startswith(std::string cmd, std::string ch) {
+    return cmd.rfind(ch) == 0;
+}
+
+bool find(std::string cmd, std::string ch) {
+    int a = cmd.find(ch);
+    return a != -1;
+}
+
 Exe_Writer::Exe_Writer() {
     std::array<std::string, 1> commands;
 }
@@ -26,8 +40,23 @@ void Exe_Writer::put_command(std::string cmd) {
 }
 
 
+Pre_Writer::Pre_Writer() {
+    opened_parentheses = 0;
+    //std::cout << opened_parentheses << std::endl;;
+    state = None;
+}
+
+int Pre_Writer::get_pars() {
+    return opened_parentheses;
+}
+
 Norm_Writer::Norm_Writer() {
-    std::vector<std::string> commands;
+    opened_parentheses = 0;
+    state = None;
+}
+
+int Norm_Writer::get_pars() { 
+    return opened_parentheses;
 }
 
 std::string Norm_Writer::get_commands() {
@@ -49,15 +78,13 @@ void Norm_Writer::delete_command() {
 }
 
 void Norm_Writer::delete_if_not_definition(std::string cmd) {
-    int found = cmd.find("=");
-    if (found == -1 && commands.size() > 0) {
+    if (!find(cmd, "=") && commands.size() > 0) {
         commands.pop_back();
     }
 }
 
 IManager::IManager() {
-    Norm_Writer norm_writer;
-    Exe_Writer exe_writer;
+    state = None;
 }
 
 void IManager::make_file(std::ofstream &tmp_file) {
@@ -79,17 +106,51 @@ void IManager::make_file(std::ofstream &tmp_file) {
 	tmp_file.flush();
 }
 
+bool IManager::is_opened_pars() {
+    if (norm_writer.get_pars() < 0 || pre_writer.get_pars() < 0) {
+        std::cout << "bracket is closed before opening\n";
+        exit(0);
+    }
+    return (norm_writer.get_pars() > 0)? norm_writer.get_pars(): pre_writer.get_pars();
+}
+
 void IManager::analise_input(std::string cmd) {
-    
-    if (cmd.compare(cmd.size() - 1, 1, ";") == 0) {
+    // { functions, classes, enums, ...
+    if (startswith(cmd, "|") && endswith(cmd, "{")) {
+        std::cout << "PRE {" << std::endl;
+
+    // } classes, structs, enums.
+    } else if (startswith(cmd, "|") && endswith(cmd, "};")) {
+        std::cout << "PRE };" << std::endl;
+
+    // } functions.
+    } else if (startswith(cmd, "|") && endswith(cmd, "}")) {
+        std::cout << "PRE }" << std::endl;
+
+    // constants, includes, defines.
+    } else if (startswith(cmd, "|")) {
+        std::cout << "PRE " << std::endl;
+
+    // { loops, while, if stms.
+    } else if (endswith(cmd, "{")) {
+        std::cout << "NORM {" << std::endl;
+
+    // } loops, while, if stms.
+    } else if (endswith(cmd, "}")) {
+        std::cout << "NORM }" << std::endl;
+
+    // normal commands (int a = 2; std::cout << "Yea";)
+    } else if (endswith(cmd, ";")) {
         norm_writer.put_command(cmd);
+
+    // executable commands (2 + 3, a, sizeof(a))
     } else {
         exe_writer.put_command(cmd);
     }
 }
 
 void IManager::remove_error(std::string cmd) {
-    if (cmd.compare(cmd.size() - 1, 1, ";") == 0) {
+    if (endswith(cmd, ";")) {
         norm_writer.delete_command();
     } else {
         // pre_command
@@ -97,7 +158,7 @@ void IManager::remove_error(std::string cmd) {
 }
 
 void IManager::remove_command(std::string cmd) {
-    if (cmd.compare(cmd.size() - 1, 1, ";") == 0) {
+    if (endswith(cmd, ";")) {
         norm_writer.delete_if_not_definition(cmd);
     }
 }
