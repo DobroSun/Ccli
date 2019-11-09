@@ -1,2 +1,2 @@
 #include <iostream>
-int main() {;if (0) {printf("false");} else {printf("true");};return 0;}
+int main() {;if (2) {printf("L"); };return 0;}
