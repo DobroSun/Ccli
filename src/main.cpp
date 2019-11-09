@@ -72,26 +72,22 @@ int main(int argc, char* argv[]) {
         i_manager.analise_input(line);
         i_manager.make_file(tmp_file);
 
-        std::cout << state << std::endl;
-        std::cout << "STATE" << std::endl;
 
         std::string res_comp = "";
         std::string res_exe = "";
 
         if (state == Closed) {
             res_comp = compiler.compile();
+
+            if (compiler.is_compiled) {
+                res_exe = executor.execute();
+                i_manager.remove_command(line);
+
+            } else {
+                i_manager.remove_error(line);
+            }
+
         }
-
-
-        if (compiler.is_compiled) {
-            res_exe = executor.execute();
-            compiler.alredy_compiled();
-            i_manager.remove_command(line);
-
-        } else {
-            i_manager.remove_error(line);
-        }
-
 
         std::string result = res_comp + res_exe;
         std::cout << result;

@@ -10,7 +10,6 @@
 
 IManager::IManager(State *_state) {
     state = _state;
-    std::cout << "jd:LJFDLS: " << *state << std::endl;
 }
 
 void IManager::change_state(State _state) {
@@ -21,7 +20,7 @@ void IManager::change_state(State _state) {
 void IManager::clear_opened() {
     norm_op_writer.clear();
     //pre_op_writer.clear();
-    *state = Closed;
+    change_state(Closed);
 }
 
 void IManager::make_file(std::ofstream &tmp_file) {
@@ -60,12 +59,16 @@ void IManager::analise_input(std::string cmd) {
 
     // { loops, while, if stms.
     } else if (endswith(cmd, "{")) {
+        if (find_place(cmd, "}") < find_place(cmd, "{")) norm_op_writer.decrease_pars();
         norm_op_writer.put_command(cmd);
         change_state(Opened_Norm);
         norm_op_writer.increase_pars();
 
     // } loops, while, if stms.
     } else if (endswith(cmd, "}")) {
+        norm_op_writer.put_command(cmd);
+        change_state(Closed);
+        norm_op_writer.decrease_pars();
 
     // normal commands (int a = 2; std::cout << "Yea";)
     } else if (endswith(cmd, ";")) {
@@ -101,9 +104,12 @@ void IManager::remove_command(std::string cmd) {
 
     // { loops, while, if stms.
     } else if (endswith(cmd, "{")) {
+        // ? is it suppose to be so
+        //norm_op_writer.remove_command(cmd);
 
     // } loops, while, if stms.
     } else if (endswith(cmd, "}")) {
+        norm_op_writer.remove_command(cmd);
 
     // normal commands (int a = 2; std::cout << "Yea";)
     } else if (endswith(cmd, ";")) {
@@ -129,9 +135,12 @@ void IManager::remove_error(std::string cmd) {
 
     // { loops, while, if stms.
     } else if (endswith(cmd, "{")) {
+        // ?
+        //norm_op_writer.remove_error(cmd);
 
     // } loops, while, if stms.
     } else if (endswith(cmd, "}")) {
+        norm_op_writer.remove_error(cmd);
 
     // normal commands (int a = 2; std::cout << "Yea";)
     } else if (endswith(cmd, ";")) {

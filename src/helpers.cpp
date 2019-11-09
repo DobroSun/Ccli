@@ -1,5 +1,6 @@
 #include <string>
 #include <algorithm>
+#include <stdexcept>
 
 bool endswith(std::string cmd, std::string ch) {
     cmd.erase(std::remove(cmd.begin(), cmd.end(), ' '), cmd.end());
@@ -12,4 +13,10 @@ bool startswith(std::string cmd, std::string ch) {
 bool find(std::string cmd, std::string ch) {
     int a = cmd.find(ch);
     return a != -1;
+}
+
+int find_place(std::string cmd, std::string ch) {
+    int a = cmd.find(ch);
+    if (!find(cmd, ch)) a = cmd.size() + 1;
+    return a;
 }

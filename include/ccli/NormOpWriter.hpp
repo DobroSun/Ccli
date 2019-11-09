@@ -5,7 +5,7 @@
 
 class NormOpWriter: public OpWriter {
     std::vector<std::string> commands;
-    int opened_pars = 0;
+    unsigned int opened_pars = 0;
 public:
     NormOpWriter();
     void put_command(std::string cmd);

@@ -9,11 +9,11 @@ void NormOpWriter::put_command(std::string cmd) {
 }
 
 void NormOpWriter::remove_command(std::string cmd) {
-
+    commands.clear();
 }
 
 void NormOpWriter::remove_error(std::string cmd) {
-
+    commands.clear();
 }
 
 std::string NormOpWriter::get_commands() {
@@ -36,5 +36,7 @@ void NormOpWriter::increase_pars() {
 }
 
 void NormOpWriter::decrease_pars() {
-    opened_pars -= 1;
+    if (opened_pars > 0) {
+        opened_pars -= 1;
+    }
 }
