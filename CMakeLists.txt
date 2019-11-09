@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.4.3)
 
+set(WRITER_PATH src/writers)
+
 add_library(
 	libs STATIC
-        src/IWriters.cpp
+        src/IManager.cpp
         src/CompileExec.cpp
+        ${WRITER_PATH}/ExecWriter.cpp
+        ${WRITER_PATH}/NormWriter.cpp
+        ${WRITER_PATH}/NormOpWriter.cpp
+        src/helpers.cpp
 )
 
 target_include_directories(
@@ -13,6 +19,6 @@ target_include_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
-add_executable(main src/main.cpp src/IWriters.cpp src/CompileExec.cpp)
+add_executable(main src/main.cpp src/IManager.cpp src/CompileExec.cpp src/helpers.cpp ${WRITER_PATH}/ExecWriter.cpp ${WRITER_PATH}/NormWriter.cpp ${WRITER_PATH}/NormOpWriter)
 target_link_libraries(main libs readline)
 

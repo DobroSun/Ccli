@@ -7,6 +7,7 @@ public:
 
     Compiler();
     std::string compile();
+    void alredy_compiled();
 };
 
 class Executor {

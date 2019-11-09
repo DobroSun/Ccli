@@ -27,10 +27,14 @@ std::string Compiler::compile() {
 
     if (result.empty()) {
         is_compiled = true;
-    } else { 
+    } else {
         is_compiled = false;
     }
     return result;
+}
+
+void Compiler::alredy_compiled() {
+    is_compiled = true;
 }
 
 Executor::Executor() {

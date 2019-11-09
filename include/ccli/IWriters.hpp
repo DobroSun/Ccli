@@ -6,7 +6,7 @@ bool startswith(std::string cmd, std::string ch);
 bool find(std::string cmd, std::string ch);
 
 enum State {
-    None,
+    All_closed,
     Norm_opened,
     Pre_opened
 };
@@ -32,15 +32,23 @@ public:
 
 class Norm_Writer {
     std::vector<std::string> commands;
+    std::vector<std::string> expressions;
+
     int opened_parentheses;
     State state;
 public:
     Norm_Writer();
     std::string get_commands();
     void put_command(std::string cmd);
+    void put_expression(std::string cmd);
     void delete_command();
     void delete_if_not_definition(std::string cmd);
+    void apply_to_commands(std::string cmd);
+    void clear_expressions();
+
     int get_pars();
+    void increase_pars();
+    void decrease_pars();
 };
 
 class IManager {
@@ -54,6 +62,8 @@ public:
     void analise_input(std::string cmd);
     void remove_error(std::string cmd);
     void remove_command(std::string cmd);
+    void change_state(std::string cmd);
+
     bool is_opened_pars();
 };
 #endif

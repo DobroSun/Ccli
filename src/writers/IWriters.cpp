@@ -3,15 +3,18 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 #include "ccli/IWriters.hpp"
 
 
 bool endswith(std::string cmd, std::string ch) {
-    return (cmd.size() > ch.size() &&  cmd.compare(cmd.size() - ch.size(), ch.size(), ch) == 0);
+    cmd.erase(std::remove(cmd.begin(), cmd.end(), ' '), cmd.end());
+    return (cmd.size() >= ch.size() &&  cmd.compare(cmd.size() - ch.size(), ch.size(), ch) == 0);
 }
 
 bool startswith(std::string cmd, std::string ch) {
+    cmd.erase(std::remove(cmd.begin(), cmd.end(), ' '), cmd.end());
     return cmd.rfind(ch) == 0;
 }
 
@@ -27,9 +30,9 @@ Exe_Writer::Exe_Writer() {
 std::string Exe_Writer::get_commands() {
     if (commands[0].empty()) return "";
     std::string cmd;
-    cmd += "std::cout << ";
+    cmd += "std::cout << (";
     cmd += commands[0];
-    cmd += " << std::endl;";
+    cmd += ") << std::endl;";
 
     commands[0] = "";
     return cmd;
@@ -42,8 +45,7 @@ void Exe_Writer::put_command(std::string cmd) {
 
 Pre_Writer::Pre_Writer() {
     opened_parentheses = 0;
-    //std::cout << opened_parentheses << std::endl;;
-    state = None;
+    state = All_closed;
 }
 
 int Pre_Writer::get_pars() {
@@ -52,11 +54,19 @@ int Pre_Writer::get_pars() {
 
 Norm_Writer::Norm_Writer() {
     opened_parentheses = 0;
-    state = None;
+    state = All_closed;
 }
 
 int Norm_Writer::get_pars() { 
     return opened_parentheses;
+}
+
+void Norm_Writer::increase_pars() {
+    opened_parentheses += 1;
+}
+
+void Norm_Writer::decrease_pars() {
+    opened_parentheses -= 1;
 }
 
 std::string Norm_Writer::get_commands() {
@@ -68,7 +78,18 @@ std::string Norm_Writer::get_commands() {
 }
 
 void Norm_Writer::put_command(std::string cmd) {
-    commands.push_back(cmd);
+    if (state == Norm_opened) {
+        expressions.push_back(cmd);
+    } else {
+        commands.push_back(cmd);
+    }
+}
+
+void Norm_Writer::put_expression(std::string cmd) {
+    increase_pars();
+    state = Norm_opened;
+
+    expressions.push_back(cmd);
 }
 
 void Norm_Writer::delete_command() {
@@ -83,12 +104,34 @@ void Norm_Writer::delete_if_not_definition(std::string cmd) {
     }
 }
 
+void Norm_Writer::apply_to_commands(std::string cmd) {
+    decrease_pars();
+    expressions.push_back(cmd);
+
+    for (auto str: expressions) {
+        commands.push_back(str);
+    }
+}
+
+void Norm_Writer::clear_expressions() {
+    for (unsigned int i = 0; i < expressions.size(); i++) {
+        commands.pop_back();
+    }
+    expressions.clear();
+}
+
 IManager::IManager() {
-    state = None;
+    state = All_closed;
+}
+
+void IManager::change_state(std::string cmd) {
+    if (endswith(cmd, "}")) {
+        state = All_closed;
+    }
 }
 
 void IManager::make_file(std::ofstream &tmp_file) {
-	tmp_file << "#include <iostream>\n";
+    tmp_file << "#include <iostream>\n";
     
     // call pre_commands
     tmp_file << "int main() {";
@@ -103,7 +146,7 @@ void IManager::make_file(std::ofstream &tmp_file) {
     tmp_file << ";";
     tmp_file << "return 0;";
     tmp_file << "}";
-	tmp_file.flush();
+    tmp_file.flush();
 }
 
 bool IManager::is_opened_pars() {
@@ -111,7 +154,7 @@ bool IManager::is_opened_pars() {
         std::cout << "bracket is closed before opening\n";
         exit(0);
     }
-    return (norm_writer.get_pars() > 0)? norm_writer.get_pars(): pre_writer.get_pars();
+    return norm_writer.get_pars() || pre_writer.get_pars();
 }
 
 void IManager::analise_input(std::string cmd) {
@@ -119,13 +162,9 @@ void IManager::analise_input(std::string cmd) {
     if (startswith(cmd, "|") && endswith(cmd, "{")) {
         std::cout << "PRE {" << std::endl;
 
-    // } classes, structs, enums.
-    } else if (startswith(cmd, "|") && endswith(cmd, "};")) {
-        std::cout << "PRE };" << std::endl;
-
-    // } functions.
-    } else if (startswith(cmd, "|") && endswith(cmd, "}")) {
-        std::cout << "PRE }" << std::endl;
+    // } functions, classes, structs, enums, ...
+    } else if (startswith(cmd, "|") && (endswith(cmd, "};") || endswith(cmd, "}"))) {
+        std::cout << "PRE }; or }" << std::endl;
 
     // constants, includes, defines.
     } else if (startswith(cmd, "|")) {
@@ -133,11 +172,11 @@ void IManager::analise_input(std::string cmd) {
 
     // { loops, while, if stms.
     } else if (endswith(cmd, "{")) {
-        std::cout << "NORM {" << std::endl;
+        norm_writer.put_expression(cmd);
 
     // } loops, while, if stms.
     } else if (endswith(cmd, "}")) {
-        std::cout << "NORM }" << std::endl;
+        norm_writer.apply_to_commands(cmd);
 
     // normal commands (int a = 2; std::cout << "Yea";)
     } else if (endswith(cmd, ";")) {
@@ -150,15 +189,28 @@ void IManager::analise_input(std::string cmd) {
 }
 
 void IManager::remove_error(std::string cmd) {
-    if (endswith(cmd, ";")) {
-        norm_writer.delete_command();
-    } else {
-        // pre_command
+    if (state == All_closed) {
+        if (endswith(cmd, ";")) {
+            norm_writer.delete_command();
+        } else {
+            // pre_command
+        }
+    } else if (state == Norm_opened) {
+        norm_writer.clear_expressions();
+    } else if (state == Pre_opened) {
+
     }
+
 }
 
 void IManager::remove_command(std::string cmd) {
-    if (endswith(cmd, ";")) {
-        norm_writer.delete_if_not_definition(cmd);
+    if (state == All_closed) {
+        if (endswith(cmd, ";")) {
+            norm_writer.delete_if_not_definition(cmd);
+        }
+    } else if (state == Norm_opened) {
+        norm_writer.clear_expressions();
+    } else if (state == Pre_opened) {
+    
     }
 }

@@ -1,51 +1,20 @@
 #include <iostream>
 #include <string>
 #include <csignal>
-#include <queue>
-#include <mutex>
 #include <fstream>
 #include <cstdio>
 #include <stdexcept>
 #include <memory>
 #include <cstring>
-#include <array>
-#include <list>
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "ccli/IWriters.hpp"
+#include "ccli/IManager.hpp"
 #include "ccli/CompileExec.hpp"
 
 #define TMP_FILE "../tmp/tmp.cpp"
 #define TMP_DIR "../tmp/"
 
-
-template<typename T>
-class th_safe_queue {
-    std::mutex _lock;
-    std::queue<T> elements;
-public: 
-    bool empty() {
-        return this->elements.empty();
-    }
-    void push(T&& value) {
-        std::lock_guard<std::mutex> lock(this->_lock);
-        this->elements.push(value);
-    }
-    T get() {
-        T value = this->elements.front();
-        while (this->elements.empty());
-        std::lock_guard<std::mutex> lock(this->_lock);
-        this->elements.pop();
-        return value;
-    }
-    T get_nowait() {
-        T value = this->elements.front();
-        std::lock_guard<std::mutex> lock(this->_lock);
-        this->elements.pop();
-        return value;
-    }
-};
 
 std::string welcome() {
     std::string welcome("Hello world");
@@ -66,9 +35,8 @@ int main(int argc, char* argv[]) {
         load_file(argv[1]);
     }
 
-    std::cout << "Gonna initialize manager" << std::endl;
-    IManager i_manager;
-    std::cout << "Gonna initialize compiler" << std::endl;
+    State state = Closed;
+    IManager i_manager(&state);
     Compiler compiler;
     Executor executor;
     
@@ -104,20 +72,26 @@ int main(int argc, char* argv[]) {
         i_manager.analise_input(line);
         i_manager.make_file(tmp_file);
 
+        std::cout << state << std::endl;
+        std::cout << "STATE" << std::endl;
 
-        std::string res_exe = "";
         std::string res_comp = "";
-        if (!i_manager.is_opened_pars()) {
-            std::cout << i_manager.is_opened_pars() << std::endl;
+        std::string res_exe = "";
+
+        if (state == Closed) {
             res_comp = compiler.compile();
         }
 
+
         if (compiler.is_compiled) {
             res_exe = executor.execute();
+            compiler.alredy_compiled();
             i_manager.remove_command(line);
+
         } else {
             i_manager.remove_error(line);
         }
+
 
         std::string result = res_comp + res_exe;
         std::cout << result;
