@@ -3,12 +3,18 @@
 
 #include "ccli/ExecWriter.hpp"
 #include "ccli/NormWriter.hpp"
+#include "ccli/PreWriter.hpp"
+
 #include "ccli/NormOpWriter.hpp"
+#include "ccli/PreOpWriter.hpp"
 
 #include "ccli/helpers.hpp"
 
 class IManager {
     NormOpWriter norm_op_writer;
+    PreOpWriter pre_op_writer;
+
+    PreWriter pre_writer;
     ExecWriter exec_writer;
     NormWriter norm_writer;
 

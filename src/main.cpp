@@ -16,9 +16,13 @@
 #define TMP_DIR "../tmp/"
 
 
-std::string welcome() {
+std::string welcome(State state) {
     std::string welcome("Hello world");
-    welcome += "> ";
+    if (state == Closed) {
+        welcome += "> ";
+    } else {
+        welcome += ". ";
+    }
     return welcome;
 }
 
@@ -28,6 +32,11 @@ void load_file(char *filename) {
 
 void close_all(std::ofstream *tmp_file) {
     tmp_file->close();
+}
+
+int put_tab(int, int) {
+    std::cout << "\t";
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -54,9 +63,10 @@ int main(int argc, char* argv[]) {
                         rl_redisplay();
                      };
     sigaction(SIGINT, &act, NULL);
+    rl_bind_key('\t', put_tab);
     
 	while (1) {
-        const char *line = readline(welcome().c_str());
+        const char *line = readline(welcome(state).c_str());
 
         if (line == NULL) {std::cout << "\n"; close_all(&tmp_file); exit(0);}
         if (!std::strcmp(line, "")) continue;

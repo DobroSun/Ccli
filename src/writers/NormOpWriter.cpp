@@ -1,8 +1,6 @@
 #include "ccli/NormOpWriter.hpp"
 #include "ccli/helpers.hpp"
 
-NormOpWriter::NormOpWriter() {
-}
 
 void NormOpWriter::put_command(std::string cmd) {
     commands.push_back(cmd);
@@ -27,7 +25,7 @@ std::string NormOpWriter::get_commands() {
 }
 
 void NormOpWriter::clear() {
-    commands.clear();
+    remove_error("");
     opened_pars = 0;
 }
 

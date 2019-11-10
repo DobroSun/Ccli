@@ -7,7 +7,7 @@ void NormWriter::put_command(std::string cmd) {
 }
 
 void NormWriter::remove_command(std::string cmd) {
-    if (!find(cmd, "=") && commands.size() > 0) {
+    if ((!find(cmd, "=") || find(cmd, "==")) && commands.size() > 0) {
         commands.pop_back();
     }
 }

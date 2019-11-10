@@ -1,2 +1,7 @@
 #include <iostream>
-int main() {;if (2) {printf("L"); };return 0;}
+
+struct New {
+int a;
+int b;
+};
+int main() {;std::cout << (ls) << std::endl;;return 0;}

@@ -7,7 +7,7 @@
 
 class OpWriter {
     std::vector<std::string> commands;
-    int opened_pars = 0;
+    int opened_pars;
 public:
     virtual ~OpWriter() {}
     virtual void put_command(std::string cmd) = 0;
