@@ -9,6 +9,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include "ccli/exec_expr.hpp"
+
 #include "ccli/IManager.hpp"
 #include "ccli/CompileExec.hpp"
 #include "ccli/Loader.hpp"
@@ -67,37 +69,9 @@ int main(int argc, char* argv[]) {
         if (line == NULL) {std::cout << "\n"; close_all(&tmp_file); exit(0);}
         if (!std::strcmp(line, "")) continue;
 
+        std::string result = exec_expr(line);
 
-        // Shit
-		std::remove(TMP_FILE);
-		std::ofstream tmp_file(TMP_FILE);
-
-        add_history(line);
-
-
-        i_manager.analise_input(line);
-        i_manager.make_file(tmp_file);
-
-
-        std::string res_comp = "";
-        std::string res_exe = "";
-
-        if (state == Closed) {
-            res_comp = compiler.compile();
-
-            if (compiler.is_compiled) {
-                res_exe = executor.execute();
-                i_manager.remove_command(line);
-
-            } else {
-                i_manager.remove_error(line);
-            }
-
-        }
-
-        std::string result = res_comp + res_exe;
-        rl_replace_line(result.c_str(), 0);
-        std::cout << rl_line_buffer;
+        std::cout << result << "\n";
     }
     return 0;
 }

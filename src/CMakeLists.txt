@@ -4,10 +4,11 @@ set(WRITER_PATH writers)
 
 add_library(
 	libs STATIC
+        exec_expr.cpp
+        helpers.cpp
         IManager.cpp
         CompileExec.cpp
         Loader.cpp
-        helpers.cpp
         ${WRITER_PATH}/ExecWriter.cpp
         ${WRITER_PATH}/NormWriter.cpp
         ${WRITER_PATH}/PreWriter.cpp
