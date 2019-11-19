@@ -13,7 +13,6 @@ IManager::IManager(State *_state) {
 }
 
 void IManager::change_state(State _state) {
-    //std::cout << "CHANGED STATE FROM " << *state << " TO " << _state << std::endl;;
     *state = _state;
 }
 

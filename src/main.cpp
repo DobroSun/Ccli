@@ -11,6 +11,7 @@
 
 #include "ccli/IManager.hpp"
 #include "ccli/CompileExec.hpp"
+#include "ccli/Loader.hpp"
 
 #define TMP_FILE "../tmp/tmp.cpp"
 #define TMP_DIR "../tmp/"
@@ -26,22 +27,17 @@ std::string welcome(State state) {
     return welcome;
 }
 
-void load_file(char *filename) {
-    std::cout << "Loading " << filename << "\n";
-}
-
 void close_all(std::ofstream *tmp_file) {
     tmp_file->close();
 }
 
-int put_tab(int, int) {
-    std::cout << "\t";
-    return 0;
-}
-
 int main(int argc, char* argv[]) {
+    Loader loader;
     if (argc > 1) {
-        load_file(argv[1]);
+        std::cout << "Doing something with " << argv[1] << std::endl;
+        // the thing is file is deleting on every iteration
+        // it's crazy to rewrite full file on each command.
+        loader.load_file(argv[1]);
     }
 
     State state = Closed;
@@ -63,7 +59,7 @@ int main(int argc, char* argv[]) {
                         rl_redisplay();
                      };
     sigaction(SIGINT, &act, NULL);
-    rl_bind_key('\t', put_tab);
+    rl_bind_key ('\t', rl_insert);
     
 	while (1) {
         const char *line = readline(welcome(state).c_str());
@@ -100,7 +96,8 @@ int main(int argc, char* argv[]) {
         }
 
         std::string result = res_comp + res_exe;
-        std::cout << result;
+        rl_replace_line(result.c_str(), 0);
+        std::cout << rl_line_buffer;
     }
     return 0;
 }

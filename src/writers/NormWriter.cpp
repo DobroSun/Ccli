@@ -2,6 +2,7 @@
 #include "ccli/helpers.hpp"
 
 
+#include <iostream>
 void NormWriter::put_command(std::string cmd) {
     commands.push_back(cmd);
 }

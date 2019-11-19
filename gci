@@ -1,10 +1,8 @@
 #!/bin/bash -e
-CC=$(which gcc)
-CXX=$(which g++)
 DIR=$(pwd)
 
 mkdir -p build
 cd build/
-cmake .. > /dev/null
+cmake -DBUILD_TESTING=OFF .. > /dev/null
 make > /dev/null
-exec bash -c "./main"
+exec bash -c "./main $*"

@@ -1,7 +1,3 @@
 #include <iostream>
 
-struct New {
-int a;
-int b;
-};
-int main() {;std::cout << (ls) << std::endl;;return 0;}
+int main() {;std::cout << (2   *34) << std::endl;;return 0;}
