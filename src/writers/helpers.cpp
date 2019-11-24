@@ -1,6 +1,7 @@
 #include <string>
 #include <algorithm>
-#include <stdexcept>
+
+#include "ccli/helpers.hpp"
 
 bool endswith(std::string cmd, std::string ch) {
     cmd.erase(std::remove(cmd.begin(), cmd.end(), ' '), cmd.end());
