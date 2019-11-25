@@ -6,8 +6,6 @@
 #include <cstring>
 #include <readline/readline.h>
 #include <readline/history.h>
-//#include "clang/Tooling/Tooling.h"
-//#include "llvm/ExecuteEngine/ExecuteEngine.h"
 
 #include "ccli/exec_expr.hpp"
 

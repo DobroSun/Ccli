@@ -4,12 +4,15 @@
 ```sh
 sudo apt-get install libreadline6-dev
 sudo apt-get install libgtest-dev
+
+sudo apt-get install clang
+sudo apt-get install llvm
+sudo apt-get install libclang-dev
+cd /usr/lib/llvm-6.0/include/
+cp -r * /usr/local/include/
 ```
 
-Building Clang and LLVM from source
-[Here](http://clang.llvm.org/get_started.html)
-```sh
-export PATH="$(pwd)/bin:$PATH" # from /llvm-project/build/bin/
-cd ../../clang/include/clang/
-cp -r * /usr/local/bin/
-```
+# should link with
+`
+LLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING=1
+`

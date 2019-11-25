@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
 set(WRITER_PATH src/writers)
-add_subdirectory(src) 
+
+# Fixes clang linking error.
+add_definitions(-DLLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING)
+add_subdirectory(src)
 
 target_include_directories(
 	libs PUBLIC 
