@@ -3,6 +3,6 @@ DIR=$(pwd)
 
 mkdir -p build
 cd build/
-cmake -DBUILD_TESTING=OFF .. > /dev/null
-make > /dev/null
+cmake -DBUILD_TESTING=OFF ..
+make
 exec bash -c "./main $*"

@@ -1,33 +1,32 @@
-#include "ccli/exec_expr.hpp"
-#include "clang/Tooling/Tooling.h"
 #include "clang/Frontend/FrontendActions.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/CodeGen/ObjectFilePCHContainerOperations.h"
-#include "clang/Driver/Options.h"
-#include "clang/Frontend/ASTConsumers.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Rewrite/Frontend/FixItRewriter.h"
-#include "clang/Rewrite/Frontend/FrontendActions.h"
-#include "clang/StaticAnalyzer/Frontend/FrontendActions.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
-#include "llvm/ADT/STLExtras.h"
-#include "llvm/Option/OptTable.h"
-#include "llvm/Support/Path.h"
-#include "llvm/Support/Signals.h"
-#include "llvm/Support/TargetSelect.h"
+#include "llvm/Support/CommandLine.h"
 
+#include "ccli/exec_expr.hpp"
+#include <string>
 
 using namespace clang::tooling;
+using namespace llvm;
+/*
+static llvm::cl::OptionCategory MyToolCategory("my-tool options");
 
-std::string exec_expr(std::string cmd) {
-    return cmd;
+static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
+
+static cl::extrahelp MoreHelp("\nMore help text...\n");
+*/
+std::string exec_expr(std::string cmd){
+    return "";
 }
-
 bool analyze(std::string cmd) {
-    ClangTool Tool();
+/*
+    CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
 
-    std::unique_ptr<FrontendActionFactory> FrontendFactory;
-    FrontendFactory = newFrontendActionFactory<clang::ento::AnalysisAction>();
-    return Tool.run(FrontendFactory.get());
+    ClangTool Tool(OptionsParser.getCompilations(),
+                 OptionsParser.getSourcePathList());
+
+    return Tool.run(newFrontendActionFactory<clang::SyntaxOnlyAction>().get());
+*/
+    return clang::tooling::runToolOnCode(new clang::SyntaxOnlyAction, cmd);
 }
+
