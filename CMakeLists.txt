@@ -5,8 +5,8 @@ project(ccli
         DESCRIPTION "A toy implementaion of C++ interpreter"
         LANGUAGES CXX)
 
-# Fixes clang linking error.
-add_definitions(-DLLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING)
+set(CMAKE_CXX_FLAGS "-Wall -std=c++17")
+
 
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION} in ${LLVM_INSTALL_PREFIX}")
@@ -27,6 +27,9 @@ add_executable(
         src/main.cpp
 )
 
+
+# Fixes clang linking error.
+target_compile_definitions(main PUBLIC -DLLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING)
 target_link_libraries(main ccli readline)
 
 if(BUILD_TESTING)

@@ -8,6 +8,7 @@
 #include <readline/history.h>
 
 #include "ccli/exec_expr.hpp"
+#include "ccli/runToolOnCode.hpp"
 
 
 std::string welcome() {
@@ -19,8 +20,10 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
         std::cout << "Doing something with " << argv[1] << std::endl;
     }
+
+    ccli::ClangTool Tool;
     
-	// handle Ctrl-C interruption
+	// Handles Ctrl-C interruption
     struct sigaction act;
     act.sa_handler = [](int sig){
                         std::cout << "\n";
@@ -32,14 +35,17 @@ int main(int argc, char* argv[]) {
 
     rl_bind_key('\t', rl_insert);
 	while (1) {
-        const char *line = readline(welcome().c_str());
+        const char *cmd = readline(welcome().c_str());
+        add_history(cmd);
 
-        if (line == NULL) {std::cout << "\n"; exit(0);}
-        if (!std::strcmp(line, "")) continue;
+        // Handles C-d and namespace
+        if (cmd == NULL) {std::cout << "\n"; exit(0);}
+        if (!std::strcmp(cmd, "")) continue;
 
-        std::string result = exec_expr(line);
+        Tool.run(cmd);
+        std::string result = exec_expr(cmd);
 
-        std::cout << result << "\n";
+        std::cout << result;
     }
     return 0;
 }
