@@ -3,9 +3,18 @@ cmake_minimum_required(VERSION 3.5)
 enable_testing()
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIR})
-add_executable(integration_tests integration_test.cpp)
+add_executable(global_tests
+    global_test.cpp
+    Utility/Utility.cpp
+)
 
-target_link_libraries(integration_tests ${GTEST_LIBRARIES} pthread ccli)
+target_link_libraries(global_tests
+    ${GTEST_LIBRARIES}
+    pthread
+    ccli
+)
+
 add_test(NAME exe_tests
-         COMMAND integration_tests
-         DEPENDS main_test)
+         COMMAND global_tests
+         DEPENDS main_test
+)
