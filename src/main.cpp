@@ -1,9 +1,17 @@
+#include "llvm/Option/OptTable.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/Support/Path.h"
+#include "llvm/Support/Signals.h"
+#include "llvm/Support/TargetSelect.h"
+
+
+#include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/Tooling/Tooling.h"
+
 #include "ccli/runToolOnCode.hpp"
 #include "ccli/GlobalContext.hpp"
 #include "ccli/exec_expr.hpp"
 #include "ccli/Utility.hpp"
-
-//#include "clang/Frontend/FrontedActions.h"
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -14,16 +22,29 @@
 #include <cstdio>
 #include <cstring>
 
+static llvm::cl::extrahelp
+    CommonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
+llvm::cl::OptionCategory CcliCategory("ccli options");
+
+static char CcliUsage[] = "Usage: ccli [option]";
+
 
 std::string welcome() {
     std::string welcome = "Hello world> ";
     return welcome;
 }
 
-int main(int argc, char* argv[]) {
-    if (argc > 1) {
-        std::cout << "Loading: " << argv[1] << std::endl;
-    }
+int main(int argc, const char **argv) {
+
+    llvm::sys::PrintStackTraceOnErrorSignal(argv[0]);
+
+    llvm::InitializeAllTargets();
+    llvm::InitializeAllTargetMCs();
+    llvm::InitializeAllAsmPrinters();
+    llvm::InitializeAllAsmParsers();
+
+
+    clang::tooling::CommonOptionsParser option(argc, argv, CcliCategory, CcliUsage);
 
     ccli::ClangTool Tool;
     ccli::GlobalContext global_context;

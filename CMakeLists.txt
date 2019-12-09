@@ -1,32 +1,24 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(ccli
-        VERSION 0.0.1
-        DESCRIPTION "A toy implementaion of C++ interpreter"
-        LANGUAGES CXX)
+project(main)
 
-set(CMAKE_CXX_FLAGS "-Wall -std=c++17")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17")
 
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION} in ${LLVM_INSTALL_PREFIX}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+message(STATUS "Using LLVMConfig.cmake in ${LLVM_DIR}")
 
 find_package(Clang REQUIRED CONFIG HINTS "{LLVM_INSTALL_PREFIX}/lib/cmake/clang")
 message(STATUS "Found Clang in ${CLANG_INSTALL_PREFIX}")
+message(STATUS "Found Cland headers in ${CLANG_INCLUDE_DIRS}")
+message(STATUS "Found LLVM headers in ${LLVM_INCLUDE_DIRS}")
 
 add_subdirectory(src)
-
-target_include_directories(
-	ccli PUBLIC 
-        ${PROJECT_SOURCE_DIR}/include
-)
 
 add_executable(
     main 
         src/main.cpp
 )
-
 
 # Fixes clang linking error.
 target_compile_definitions(main PUBLIC -DLLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING)

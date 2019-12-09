@@ -5,4 +5,4 @@ mkdir -p build
 cd build/
 cmake -DBUILD_TESTING=OFF ..
 make
-exec bash -c "./main $*"
+exec ./main "$*" "--"
