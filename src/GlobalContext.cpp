@@ -18,7 +18,6 @@ GlobalContext::GlobalContext() {
     _include = {
             "#include <iostream>",
             };
-
     filename = "ccli.cpp";
 }
 

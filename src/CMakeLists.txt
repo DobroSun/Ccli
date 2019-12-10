@@ -6,7 +6,7 @@ add_library(
         runToolOnCode.cpp
         GlobalContext.cpp
         Utility.cpp
-        #DeclMatcher.cpp
+        DeclMatcher.cpp
 )
 
 target_include_directories(ccli PUBLIC "${LLVM_INCLUDE_DIR}")
@@ -20,4 +20,5 @@ target_link_libraries(
         clangTooling
         clangFrontend
         clangStaticAnalyzerFrontend
+        clangAST
 )

@@ -1,9 +1,7 @@
-#include "llvm/Option/OptTable.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/Signals.h"
 #include "llvm/Support/TargetSelect.h"
-
 
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
@@ -12,6 +10,7 @@
 #include "ccli/GlobalContext.hpp"
 #include "ccli/exec_expr.hpp"
 #include "ccli/Utility.hpp"
+#include "ccli/DeclMatcher.hpp"
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -24,8 +23,8 @@
 
 static llvm::cl::extrahelp
     CommonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
-llvm::cl::OptionCategory CcliCategory("ccli options");
 
+llvm::cl::OptionCategory CcliCategory("ccli options");
 static char CcliUsage[] = "Usage: ccli [option]";
 
 
@@ -48,6 +47,7 @@ int main(int argc, const char **argv) {
 
     ccli::ClangTool Tool;
     ccli::GlobalContext global_context;
+    ccli::DeclMatcher DeclMatcher;
     
     // Handles Ctrl-C interruption
     struct sigaction act;
@@ -69,6 +69,10 @@ int main(int argc, const char **argv) {
 
         add_history(cmd);
         global_context.add_command(cmd);
+
+
+        DeclMatcher.findDecl(cmd);
+
 
         Tool.run(global_context.get_context());
         std::string result = exec_expr(cmd);
