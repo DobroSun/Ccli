@@ -22,24 +22,17 @@ void DeclFinder::HandleTranslationUnit(clang::ASTContext &Context) {
 
 // DeclVisitor
 bool DeclVisitor::VisitDecl(clang::Decl *Decl) {
-    //llvm::outs() << Decl->getDeclKindName() << "\n";
     Decl->dump();
-    //llvm::outs() << "Found " << NamedDecl->getQualifiedNameAsString() << " at "
-                 //<< getDeclLocation(NamedDecl->getLocation()) << "\n";
     return true;
 }
 
 bool DeclVisitor::VisitStmt(clang::Stmt *Stmt) {
     Stmt->dump();
-    //llvm::outs() << "Found " << NamedDecl->getQualifiedNameAsString() << " at "
-                 //<< getDeclLocation(NamedDecl->getLocation()) << "\n";
     return true;
 }
 
 bool DeclVisitor::VisitQualType(clang::QualType *QualType) {
     QualType->dump();
-    //llvm::outs() << "Found " << NamedDecl->getQualifiedNameAsString() << " at "
-                 //<< getDeclLocation(NamedDecl->getLocation()) << "\n";
     return true;
 }
 

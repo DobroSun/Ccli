@@ -20,9 +20,19 @@ add_executable(
         src/main.cpp
 )
 
+
+option(DEFINE_DEBUG "Build the project using debugging code" OFF)
+if(DEFINE_DEBUG)
+    target_compile_definitions(main PUBLIC -DDEBUG)
+    set(CMAKE_BUILD_TYPE Debug)
+endif(DEFINE_DEBUG)
+
+
 # Fixes clang linking error.
 target_compile_definitions(main PUBLIC -DLLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING)
 target_link_libraries(main ccli readline)
+
+message(STATUS "Build type is " ${CMAKE_BUILD_TYPE})
 
 if(BUILD_TESTING)
     add_subdirectory(test)

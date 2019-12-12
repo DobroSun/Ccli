@@ -11,6 +11,7 @@
 #include "ccli/exec_expr.hpp"
 #include "ccli/Utility.hpp"
 #include "ccli/DeclMatcher.hpp"
+#include "ccli/Logger.hpp"
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -58,8 +59,8 @@ int main(int argc, const char **argv) {
                         rl_redisplay();
                      };
     sigaction(SIGINT, &act, NULL);
-
     rl_bind_key('\t', rl_insert);
+
     while (1) {
         const char *cmd = readline(welcome().c_str());
 
