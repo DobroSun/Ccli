@@ -6,6 +6,7 @@ include_directories(${GTEST_INCLUDE_DIR})
 add_executable(global_tests
     global_test.cpp
     Utility/Utility.cpp
+    Logger/Logger.cpp
 )
 
 target_link_libraries(global_tests

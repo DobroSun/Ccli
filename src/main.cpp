@@ -35,7 +35,6 @@ std::string welcome() {
 }
 
 int main(int argc, const char **argv) {
-
     llvm::sys::PrintStackTraceOnErrorSignal(argv[0]);
 
     llvm::InitializeAllTargets();

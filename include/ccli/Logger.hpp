@@ -5,13 +5,14 @@
 
 class Logger {
 public:
-    Logger& operator<<(const char* str) {
+    template<typename T>
+    inline Logger& operator<<(T str) {
     #ifdef DEBUG
-        if(DEBUG) std::cout << str;
+        std::cout << str;
     #endif
         return *this;
     }
-    Logger& operator<<(std::ostream& (*fun)(std::ostream&)) {
+    inline Logger& operator<<(std::ostream& (*fun)(std::ostream&)) {
     #ifdef DEBUG
         std::cout << std::endl;
     #endif
