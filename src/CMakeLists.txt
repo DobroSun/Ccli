@@ -21,4 +21,5 @@ target_link_libraries(
         clangFrontend
         clangStaticAnalyzerFrontend
         clangAST
+        clangParse
 )

@@ -5,6 +5,7 @@
 
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
+#include "clang/Parse/ParseAST.h"
 
 #include "ccli/runToolOnCode.hpp"
 #include "ccli/GlobalContext.hpp"
@@ -44,7 +45,72 @@ int main(int argc, const char **argv) {
 
 
     clang::tooling::CommonOptionsParser option(argc, argv, CcliCategory, CcliUsage);
+    clang::CompilerInstance CI(std::make_shared<clang::PCHContainerOperations>());
 
+    CI.createDiagnostics();
+
+    clang::LangOptions &lo = CI.getLangOpts();
+    lo.CPlusPlus = 1;
+
+    auto TO = std::make_shared<clang::TargetOptions>();
+    TO->Triple = llvm::sys::getDefaultTargetTriple();
+    clang::TargetInfo *TI = clang::TargetInfo::CreateTargetInfo(CI.getDiagnostics(), TO);
+    CI.setTarget(TI);
+
+    CI.createFileManager();
+    clang::FileManager &FileManager = CI.getFileManager();
+    CI.createSourceManager(FileManager);
+    clang::SourceManager &SourceManager = CI.getSourceManager();
+
+    CI.createPreprocessor(clang::TU_Module);
+    CI.createASTContext();
+
+
+    llvm::StringRef code = "vod foo();";
+    std::string filename = "ccli.cpp";
+    std::unique_ptr<llvm::MemoryBuffer> MB(llvm::MemoryBuffer::getMemBuffer(code, filename));
+
+    clang::FrontendInputFile input_file((&MB)->get(), clang::InputKind());
+
+    clang::FrontendOptions &FrontOpts = CI.getFrontendOpts();
+    FrontOpts.Inputs = std::vector<clang::FrontendInputFile> {input_file};
+
+
+    ccli::DeclFindingAction action;
+    if(action.BeginSourceFile(CI, CI.getFrontendOpts().Inputs[0])) {
+        action.Execute();
+
+        auto &AstContext = CI.getASTContext();
+        auto &DiagnosticsEg = AstContext.getDiagnostics();
+        auto DiagnosticsCs = DiagnosticsEg.getClient();
+        auto num_errs = DiagnosticsCs->getNumErrors();
+
+        debug << "Number of errors in ASTContext: " << num_errs << std::endl;;
+
+        action.EndSourceFile();
+    }
+
+
+/*
+    auto &AstContext = CI.getASTContext();
+    auto &DiagnosticsEg = AstContext.getDiagnostics();
+    auto DiagnosticsCs = DiagnosticsEg.getClient();
+    auto num_errs = DiagnosticsCs->getNumErrors();
+
+    debug << "Number of errors in ASTContext: " << num_errs << std::endl;;
+
+
+    ccli::DeclFinder MyConsumer(SourceManager);
+    clang::ParseAST(CI.getPreprocessor(), &MyConsumer, CI.getASTContext());
+
+
+    auto &AstContext1 = CI.getASTContext();
+    auto &DiagnosticsEg1 = AstContext1.getDiagnostics();
+    auto DiagnosticsCs1 = DiagnosticsEg1.getClient();
+    auto num_errs1 = DiagnosticsCs1->getNumErrors();
+
+    debug << "Number of errors in ASTContext: " << num_errs1 << std::endl;;
+*/
     ccli::ClangTool Tool;
     ccli::GlobalContext global_context;
     ccli::DeclMatcher DeclMatcher;
@@ -71,7 +137,7 @@ int main(int argc, const char **argv) {
         global_context.add_command(cmd);
 
 
-        DeclMatcher.findDecl(cmd);
+        DeclMatcher.findDecl(global_context.get_context());
 
 
         Tool.run(global_context.get_context());
