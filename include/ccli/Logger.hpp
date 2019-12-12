@@ -1,3 +1,6 @@
+#ifndef LOGGER_HPP
+#define LOGGER_HPP
+
 #include <ostream>
 
 class Logger {
@@ -15,3 +18,4 @@ public:
         return *this;
     }
 } debug;
+#endif
