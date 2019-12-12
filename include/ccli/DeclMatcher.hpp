@@ -26,8 +26,6 @@ class DeclVisitor: public clang::RecursiveASTVisitor<DeclVisitor> {
 public:
     DeclVisitor(clang::SourceManager &SourceManager): SourceManager(SourceManager) {}
     bool VisitDecl(clang::Decl *Decl);
-    bool VisitStmt(clang::Stmt *Stmt);
-    bool VisitQualType(clang::QualType *QualType);
 private:
 };
 

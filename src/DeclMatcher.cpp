@@ -15,24 +15,19 @@ std::unique_ptr<clang::ASTConsumer> DeclFindingAction::CreateASTConsumer(
 
 // DeclFinder
 void DeclFinder::HandleTranslationUnit(clang::ASTContext &Context) {
-    //Visitor.TraverseDecl(Context.getTranslationUnitDecl());
-    Visitor.TraverseAST(Context);
+    clang::SourceManager *SourceManager = &Context.getSourceManager();
+    auto Decls = Context.getTranslationUnitDecl()->decls();
+    for(auto &Decl: Decls) {
+        const auto& FileID = SourceManager->getFileID(Decl->getLocation());
+        if(FileID != SourceManager->getMainFileID()) continue;
+        Visitor.TraverseDecl(Decl);
+    }
 }
 
 
 // DeclVisitor
 bool DeclVisitor::VisitDecl(clang::Decl *Decl) {
     Decl->dump();
-    return true;
-}
-
-bool DeclVisitor::VisitStmt(clang::Stmt *Stmt) {
-    Stmt->dump();
-    return true;
-}
-
-bool DeclVisitor::VisitQualType(clang::QualType *QualType) {
-    QualType->dump();
     return true;
 }
 
