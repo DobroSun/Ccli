@@ -36,14 +36,6 @@ bool DeclVisitor::VisitQualType(clang::QualType *QualType) {
     return true;
 }
 
-std::string DeclVisitor::getDeclLocation(clang::SourceLocation Loc) const {
-    std::ostringstream OSS;
-    OSS << SourceManager.getFilename(Loc).str() << ":"
-        << SourceManager.getSpellingLineNumber(Loc) << ":"
-        << SourceManager.getSpellingColumnNumber(Loc);
-    return OSS.str();
-}
-
 
 DeclMatcher::DeclMatcher() {
 

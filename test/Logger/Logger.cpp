@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+#define DEBUG
 #include "ccli/Logger.hpp"
 
 #include <string>
@@ -13,26 +14,18 @@ sstr init_read_buf() {
     return res;
 }
 
+
 TEST(LoggerCase, debug_works) {
-    // All tests before define DEBUG.
-    // Have to fail because is running without DEBUG macro
-    sstr res1 = init_read_buf();
-    std::string expected1 = "FAIL";
-
-    debug << expected1 << std::endl;
-    ASSERT_EQ(res1.str(), "");
-
-    #define DEBUG 1
-    sstr res2 = init_read_bug();
+    sstr res2 = init_read_buf();
     std::string expected2 = "PASS";
 
     debug << expected2 << std::endl;
     ASSERT_EQ(res2.str(), expected2 + "\n");
 
 
-    sstr res3 = init_read_bug();
-    const char *expected2 = "PASS";
+    sstr res3 = init_read_buf();
+    const char *expected3 = "PASS";
 
-    debug << expected2;
+    debug << expected3;
     ASSERT_EQ(res3.str(), expected2);
 }

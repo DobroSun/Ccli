@@ -29,7 +29,6 @@ public:
     bool VisitStmt(clang::Stmt *Stmt);
     bool VisitQualType(clang::QualType *QualType);
 private:
-    std::string getDeclLocation(clang::SourceLocation Loc) const;
 };
 
 
