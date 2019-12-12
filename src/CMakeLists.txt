@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.5)
 add_library(
 	ccli STATIC
         exec_expr.cpp
-        runToolOnCode.cpp
+        CcliTool.cpp
         GlobalContext.cpp
         Utility.cpp
         DeclMatcher.cpp

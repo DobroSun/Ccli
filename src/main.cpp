@@ -4,10 +4,11 @@
 #include "llvm/Support/TargetSelect.h"
 
 #include "clang/Tooling/CommonOptionsParser.h"
-#include "clang/Tooling/Tooling.h"
-#include "clang/Parse/ParseAST.h"
+//#include "clang/Tooling/Tooling.h"
+//#include "clang/Parse/ParseAST.h"
+#include "clang/StaticAnalyzer/Frontend/FrontendActions.h"
 
-#include "ccli/runToolOnCode.hpp"
+#include "ccli/CcliTool.hpp"
 #include "ccli/GlobalContext.hpp"
 #include "ccli/exec_expr.hpp"
 #include "ccli/Utility.hpp"
@@ -35,6 +36,7 @@ std::string welcome() {
     return welcome;
 }
 
+
 int main(int argc, const char **argv) {
     llvm::sys::PrintStackTraceOnErrorSignal(argv[0]);
 
@@ -43,14 +45,16 @@ int main(int argc, const char **argv) {
     llvm::InitializeAllAsmPrinters();
     llvm::InitializeAllAsmParsers();
 
-
+    // Have to parse command line arguments
+    // And add help... and so forth.
     clang::tooling::CommonOptionsParser option(argc, argv, CcliCategory, CcliUsage);
-    clang::CompilerInstance CI(std::make_shared<clang::PCHContainerOperations>());
 
+
+
+    clang::CompilerInstance CI(std::make_shared<clang::PCHContainerOperations>());
+/*
     CI.createDiagnostics();
 
-    clang::LangOptions &lo = CI.getLangOpts();
-    lo.CPlusPlus = 1;
 
     auto TO = std::make_shared<clang::TargetOptions>();
     TO->Triple = llvm::sys::getDefaultTargetTriple();
@@ -64,12 +68,14 @@ int main(int argc, const char **argv) {
 
     CI.createPreprocessor(clang::TU_Module);
     CI.createASTContext();
+*/
 
-
+/*
     llvm::StringRef code = "vod foo();";
     std::string filename = "ccli.cpp";
     std::unique_ptr<llvm::MemoryBuffer> MB(llvm::MemoryBuffer::getMemBuffer(code, filename));
 
+    // Create VirtualFile
     clang::FrontendInputFile input_file((&MB)->get(), clang::InputKind());
 
     clang::FrontendOptions &FrontOpts = CI.getFrontendOpts();
@@ -89,7 +95,7 @@ int main(int argc, const char **argv) {
 
         action.EndSourceFile();
     }
-
+*/
 
 /*
     auto &AstContext = CI.getASTContext();
@@ -111,9 +117,17 @@ int main(int argc, const char **argv) {
 
     debug << "Number of errors in ASTContext: " << num_errs1 << std::endl;;
 */
-    ccli::ClangTool Tool;
-    ccli::GlobalContext global_context;
+    ccli::CcliTool Tool(CI);
+    ccli::GlobalContext GlobalContext;
     ccli::DeclMatcher DeclMatcher;
+
+
+    // Frontend Actions that will be processed
+    // With CcliTool.
+
+    std::unique_ptr<ccli::DeclFindingAction> Finding_Act(new ccli::DeclFindingAction);
+    std::unique_ptr<clang::ento::AnalysisAction> Analysis_Act(new clang::ento::AnalysisAction);
+
     
     // Handles Ctrl-C interruption
     struct sigaction act;
@@ -134,15 +148,24 @@ int main(int argc, const char **argv) {
         if (!std::strcmp(cmd, "")) continue;
 
         add_history(cmd);
-        global_context.add_command(cmd);
+        GlobalContext.add_command(cmd);
+        std::string compiled_str = GlobalContext.get_context();
+
+/*
+        Tool.run(Finding_Act, compiled_str);
+
+        Tool.run(Analysis_Act, compiled_str);
+*/
+        //std::unique_ptr<clang::ento::AnalysisAction> AnalysisAction(new clang::ento::AnalysisAction);
+        debug << "Before call Tool.run()" << std::endl;
+        Tool.run(Finding_Act.get());
+
+        //Tool.run(new ccli::DeclFindingAction, "void fofo();");
 
 
-        DeclMatcher.findDecl(global_context.get_context());
 
 
-        Tool.run(global_context.get_context());
         std::string result = exec_expr(cmd);
-
         std::cout << result;
     }
     return 0;

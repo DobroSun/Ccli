@@ -18,5 +18,7 @@ public:
     #endif
         return *this;
     }
-} debug;
+};
+#define debug Logger()
+
 #endif
