@@ -3,10 +3,9 @@
 #include "llvm/Support/Signals.h"
 #include "llvm/Support/TargetSelect.h"
 
+#include "clang/Tooling/Tooling.h"
 #include "clang/Tooling/CommonOptionsParser.h"
-//#include "clang/Tooling/Tooling.h"
-//#include "clang/Parse/ParseAST.h"
-#include "clang/StaticAnalyzer/Frontend/FrontendActions.h"
+#include "clang/Lex/HeaderSearch.h"
 
 #include "ccli/CcliTool.hpp"
 #include "ccli/GlobalContext.hpp"
@@ -24,11 +23,47 @@
 #include <cstdio>
 #include <cstring>
 
+
+
+
+
 static llvm::cl::extrahelp
     CommonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
 
 llvm::cl::OptionCategory CcliCategory("ccli options");
 static char CcliUsage[] = "Usage: ccli [option]";
+
+
+bool Init_CI(clang::CompilerInstance &CI) {
+    // Initialize DiagnosticsEngine.
+    CI.createDiagnostics();
+    clang::DiagnosticsEngine &DiagnosticsEngine = CI.getDiagnostics();
+
+    // Initialize llvm TargetInfo.
+    auto TO = std::make_shared<clang::TargetOptions>();
+    TO->Triple = llvm::sys::getDefaultTargetTriple();
+    clang::TargetInfo *TI = clang::TargetInfo::CreateTargetInfo(CI.getDiagnostics(), TO);
+    CI.setTarget(TI);
+
+    // Initialize File, Source Managers. 
+    CI.createFileManager();
+    clang::FileManager &FileManager = CI.getFileManager();
+    CI.createSourceManager(FileManager);
+    clang::SourceManager &SourceManager = CI.getSourceManager();
+
+    // Initialize LangOptions.
+    clang::LangOptions LangOpts;
+
+    // Initialize HeaderSearch.
+    std::string res = exec("gcc -v -E -xc - < /dev/null 2>&1 | sed -ne '/starts here/,/End of/p' | grep -v '#include' | grep -v 'End of search list'");
+    std::shared_ptr<clang::HeaderSearchOptions> HeaderSearchOptions =
+        std::make_shared<clang::HeaderSearchOptions>();
+    //HeaderSearchOptions.UserEntries = res;
+    clang::HeaderSearch(HeaderSearchOptions, SourceManager,
+                        DiagnosticsEngine, LangOpts, TI);
+
+    return true;
+}
 
 
 std::string welcome() {
@@ -52,6 +87,7 @@ int main(int argc, const char **argv) {
 
 
     clang::CompilerInstance CI(std::make_shared<clang::PCHContainerOperations>());
+    Init_CI(CI);
 /*
     CI.createDiagnostics();
 
@@ -91,7 +127,7 @@ int main(int argc, const char **argv) {
         auto DiagnosticsCs = DiagnosticsEg.getClient();
         auto num_errs = DiagnosticsCs->getNumErrors();
 
-        debug << "Number of errors in ASTContext: " << num_errs << std::endl;;
+        debug() << "Number of errors in ASTContext: " << num_errs << std::endl;;
 
         action.EndSourceFile();
     }
@@ -103,7 +139,7 @@ int main(int argc, const char **argv) {
     auto DiagnosticsCs = DiagnosticsEg.getClient();
     auto num_errs = DiagnosticsCs->getNumErrors();
 
-    debug << "Number of errors in ASTContext: " << num_errs << std::endl;;
+    debug() << "Number of errors in ASTContext: " << num_errs << std::endl;;
 
 
     ccli::DeclFinder MyConsumer(SourceManager);
@@ -115,20 +151,19 @@ int main(int argc, const char **argv) {
     auto DiagnosticsCs1 = DiagnosticsEg1.getClient();
     auto num_errs1 = DiagnosticsCs1->getNumErrors();
 
-    debug << "Number of errors in ASTContext: " << num_errs1 << std::endl;;
+    debug() << "Number of errors in ASTContext: " << num_errs1 << std::endl;;
 */
-    ccli::CcliTool Tool(CI);
+    ccli::CcliTool Tool(CI, HeaderSearch);
     ccli::GlobalContext GlobalContext;
     ccli::DeclMatcher DeclMatcher;
 
 
     // Frontend Actions that will be processed
     // With CcliTool.
-
     std::unique_ptr<ccli::DeclFindingAction> Finding_Act(new ccli::DeclFindingAction);
     std::unique_ptr<clang::ento::AnalysisAction> Analysis_Act(new clang::ento::AnalysisAction);
 
-    
+
     // Handles Ctrl-C interruption
     struct sigaction act;
     act.sa_handler = [](int sig){
@@ -151,18 +186,9 @@ int main(int argc, const char **argv) {
         GlobalContext.add_command(cmd);
         std::string compiled_str = GlobalContext.get_context();
 
-/*
-        Tool.run(Finding_Act, compiled_str);
+        Tool.run(Analysis_Act.get(), compiled_str);
 
-        Tool.run(Analysis_Act, compiled_str);
-*/
-        //std::unique_ptr<clang::ento::AnalysisAction> AnalysisAction(new clang::ento::AnalysisAction);
-        debug << "Before call Tool.run()" << std::endl;
-        Tool.run(Finding_Act.get());
-
-        //Tool.run(new ccli::DeclFindingAction, "void fofo();");
-
-
+        //Tool.run(Analysis_Act, compiled_str);
 
 
         std::string result = exec_expr(cmd);

@@ -3,22 +3,25 @@
 
 #include <ostream>
 
-class Logger {
+// Works so shitty.
+// Doesn't handle numbers, ... .
+// All except std::string and chars*.
+// T&& and std::forwawd<T> doesn't help.
+// TODO: Fix debug. It works correct only in main.cpp.
+class debug {
 public:
-    template<typename T>
-    inline Logger& operator<<(T str) {
+    template<class T>
+    inline debug& operator<<(T str) {
     #ifdef DEBUG
         std::cout << str;
     #endif
         return *this;
     }
-    inline Logger& operator<<(std::ostream& (*fun)(std::ostream&)) {
+    inline debug& operator<<(std::ostream& (*fun)(std::ostream&)) {
     #ifdef DEBUG
         std::cout << std::endl;
     #endif
         return *this;
     }
 };
-#define debug Logger()
-
 #endif
