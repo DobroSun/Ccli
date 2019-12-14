@@ -26,8 +26,9 @@ void GlobalContext::add_command(std::string cmd) {
     main_commands.push_back(cmd);
 }
 
-// Pushes all commands to string representing file content,
-// Than returns it as VirtualFile.
+// Pushes all commands to string,
+// representing file content,
+// Than returns it.
 std::string GlobalContext::get_context() {
     std::string file_buffer;
     
