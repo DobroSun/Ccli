@@ -28,3 +28,39 @@ TEST(JoinCase, join) {
     ASSERT_EQ(res2, expected2);
     ASSERT_EQ(res3, expected3);
 }
+
+TEST(SplitCase, split) {
+    std::string cmd1 = "int a;\nbool b;\nvoid foo();";
+    std::string cmd2 = "a\n";
+    std::string cmd3 = "b";
+    std::string cmd4 = "This:is:gonna:be:the:greatest:project:in:the:whole:world:!";
+
+
+    std::vector<std::string> expected1 = {
+        "int a;",
+        "bool b;",
+        "void foo();"};
+    std::vector<std::string> expected2 = {
+        "a"};
+    std::vector<std::string> expected3 = {
+        "b"};
+    std::vector<std::string> expected4 = {
+        "This", "is", "gonna", "be", "the",
+        "greatest", "project", "in",
+        "the", "whole", "world", "!"};
+
+
+    std::vector<std::string> res1 = split(cmd1);
+    std::vector<std::string> res2 = split(cmd2);
+    std::vector<std::string> res3 = split(cmd3);
+    std::vector<std::string> res4 = split(cmd4, ':');
+
+
+    ASSERT_EQ(res1, expected1);
+    ASSERT_EQ(res2, expected2);
+    ASSERT_EQ(res3, expected3);
+    ASSERT_EQ(res4, expected4);
+
+
+
+}
