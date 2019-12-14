@@ -1,5 +1,5 @@
-#ifndef DECLMATHCER_CPP
-#define DECLMATHCER_CPP
+#ifndef DECLMATCHER_CPP
+#define DECLMATCHER_CPP
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/AST/ASTContext.h"
