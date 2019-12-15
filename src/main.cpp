@@ -5,6 +5,7 @@
 #include "clang/Tooling/Tooling.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Lex/HeaderSearch.h"
+#include "clang/Frontend/FrontendActions.h"
 
 #include "ccli/CcliTool.hpp"
 #include "ccli/GlobalContext.hpp"
@@ -36,7 +37,7 @@ static char CcliUsage[] = "Usage: ccli [option]";
 void Init_CI(clang::CompilerInstance &CI) {
     // Initialize DiagnosticsEngine.
     CI.createDiagnostics();
-    clang::DiagnosticsEngine &DiagnosticsEngine = CI.getDiagnostics();
+    //clang::DiagnosticsEngine &DiagnosticsEngine = CI.getDiagnostics();
 
     // Initialize llvm TargetInfo.
     auto TO = std::make_shared<clang::TargetOptions>();
@@ -48,7 +49,7 @@ void Init_CI(clang::CompilerInstance &CI) {
     CI.createFileManager();
     clang::FileManager &FileManager = CI.getFileManager();
     CI.createSourceManager(FileManager);
-    clang::SourceManager &SourceManager = CI.getSourceManager();
+    //clang::SourceManager &SourceManager = CI.getSourceManager();
 
     // Initialize LangOptions.
     clang::LangOptions LangOpts;
@@ -58,6 +59,10 @@ void Init_CI(clang::CompilerInstance &CI) {
 
 void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
     std::vector<std::string> headers = get_splitted_exec(GET_HEADERS_CMD);
+    // !!!!!!!!!!!!!!!!!
+    // Have to ltrim all from headers.
+    // Because they cannot be added as Paths,
+    // For HeaderSearchOptions.
 
 
     clang::FileManager &FileManager = CI.getFileManager();
@@ -71,24 +76,38 @@ void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
         std::make_shared<clang::HeaderSearchOptions>();
 
     debug() << "Start of print" << std::endl;
-    //print(headers);
+    print(headers);
     debug() << "End of print" << std::endl;
 
-    //HeaderSearchOptions->UseStandardSystemIncludes = 1;
 
-/*
+    //HeaderSearchOptions->UseBuiltinIncludes = 1;
+    //HeaderSearchOptions->UseStandardSystemIncludes = 1;
+    //HeaderSearchOptions->UseStandardCXXIncludes = 1;
+
+/*   
+    for(std::string &path: headers) {
+        HeaderSearchOptions->AddPath(
+            path, clang::frontend::System, false, false);
+        debug() << path << " <- added to HeaderPaths" << std::endl;
+    }
+*/
+
     std::vector<clang::DirectoryLookup> Dirs;
-    
+
     for(std::string path: headers) {
         clang::DirectoryLookup lookup = clang::DirectoryLookup(
                 FileManager.getDirectory(path),
                 clang::SrcMgr::CharacteristicKind::C_System,
                 false);
-
+        if(!lookup.getDir()) {
+            debug() << "Clang couldn't Interpret this path -> " << path << std::endl;
+            continue;
+        }
         debug() << path << " <- Pushing to vector of dirs" << std::endl;
         Dirs.push_back(lookup);
     }
-*/
+
+
     HS = new clang::HeaderSearch(HeaderSearchOptions, SourceManager,
        DiagnosticsEngine, LangOpts, &TargetInfo);
     //HS->SetSearchPaths(Dirs, 0, 0, true);
@@ -127,8 +146,9 @@ int main(int argc, const char **argv) {
 
     // Frontend Actions that will be processed
     // With CcliTool.
-    std::unique_ptr<ccli::DeclFindingAction> Finding_Act(new ccli::DeclFindingAction);
-    std::unique_ptr<clang::ento::AnalysisAction> Analysis_Act(new clang::ento::AnalysisAction);
+    std::unique_ptr<ccli::DeclFindingAction> FindingAct(new ccli::DeclFindingAction);
+    std::unique_ptr<clang::ento::AnalysisAction> AnalysisAct(new clang::ento::AnalysisAction);
+    std::unique_ptr<clang::SyntaxOnlyAction> SyntaxOnlyAct(new clang::SyntaxOnlyAction);
 
 
     // Handles Ctrl-C interruption
@@ -154,7 +174,8 @@ int main(int argc, const char **argv) {
         std::string context_string = GlobalContext.get_context();
 
 
-        Tool.run(Analysis_Act.get(), context_string);
+        //Tool.run(SyntaxOnlyAct.get(), context_string);
+        Tool.run(FindingAct.get(), context_string);
 
         //Tool.run(Analysis_Act, compiled_str);
 

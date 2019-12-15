@@ -2,6 +2,7 @@
 #include <memory>
 #include <array>
 #include <iostream>
+#include <regex>
 
 #include "llvm/Support/raw_ostream.h"
 
@@ -97,4 +98,18 @@ std::vector<std::string> get_splitted_exec(const std::string &cmd, char ch) {
 }
 std::vector<std::string> get_splitted_exec(std::string &&cmd, char ch) {
     return split(exec(cmd), ch);
+}
+
+
+
+
+std::string ltrim(std::string &str) {
+    return std::regex_replace(str, std::regex("^ +"), "");
+}
+std::string rtrim(std::string &str) {
+    return std::regex_replace(str, std::regex(" +$"), "");
+}
+
+std::string trim(std::string &str) {
+    return std::regex_replace(str, std::regex("^ +| +$|( ) +"), "$1");
 }

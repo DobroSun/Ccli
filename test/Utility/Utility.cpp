@@ -116,3 +116,77 @@ TEST(PrintCase, print) {
     ASSERT_EQ(res2.str(), expected2);
 
 }
+
+
+TEST(TrimCase, ltrim) {
+    std::string cmd1 = "    foo";
+    std::string cmd2 = "  f  ";
+    std::string cmd3 = "foo   ";
+    std::string cmd4 = "vo    id";
+
+    std::string res1 = ltrim(cmd1);
+    std::string res2 = ltrim(cmd2);
+    std::string res3 = ltrim(cmd3);
+    std::string res4 = ltrim(cmd4);
+
+    std::string expected1 = "foo";
+    std::string expected2 = "f  ";
+    std::string expected3 = cmd3;
+    std::string expected4 = cmd4;
+
+
+    ASSERT_EQ(res1, expected1);
+    ASSERT_EQ(res2, expected2);
+    ASSERT_EQ(res3, expected3);
+    ASSERT_EQ(res4, expected4);
+}
+
+TEST(TrimCase, rtrim) {
+    std::string cmd1 = "    foo";
+    std::string cmd2 = "  f  ";
+    std::string cmd3 = "foo   ";
+    std::string cmd4 = "vo    id";
+
+    std::string res1 = rtrim(cmd1);
+    std::string res2 = rtrim(cmd2);
+    std::string res3 = rtrim(cmd3);
+    std::string res4 = rtrim(cmd4);
+
+    std::string expected1 = cmd1;
+    std::string expected2 = "  f";
+    std::string expected3 = "foo";
+    std::string expected4 = cmd4;
+
+
+    ASSERT_EQ(res1, expected1);
+    ASSERT_EQ(res2, expected2);
+    ASSERT_EQ(res3, expected3);
+    ASSERT_EQ(res4, expected4);
+}
+
+TEST(TrimCase, trim) {
+    std::string cmd1 = "    foo";
+    std::string cmd2 = "  f  ";
+    std::string cmd3 = "foo   ";
+    std::string cmd4 = "vo    id";
+    std::string cmd5 = " foo  bar   baz  ";
+
+    std::string res1 = trim(cmd1);
+    std::string res2 = trim(cmd2);
+    std::string res3 = trim(cmd3);
+    std::string res4 = trim(cmd4);
+    std::string res5 = trim(cmd5);
+
+    std::string expected1 = "foo";
+    std::string expected2 = "f";
+    std::string expected3 = "foo";
+    std::string expected4 = "vo id";
+    std::string expected5 = "foo bar baz";
+
+
+    ASSERT_EQ(res1, expected1);
+    ASSERT_EQ(res2, expected2);
+    ASSERT_EQ(res3, expected3);
+    ASSERT_EQ(res4, expected4);
+    ASSERT_EQ(res5, expected5);
+}

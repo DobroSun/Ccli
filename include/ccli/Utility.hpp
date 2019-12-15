@@ -15,8 +15,13 @@ std::string exec(std::string &&cmd);
 std::vector<std::string> get_splitted_exec(const std::string &cmd, char ch='\n');
 std::vector<std::string> get_splitted_exec(std::string &&cmd, char ch='\n');
 
+std::string ltrim(std::string &str);
+std::string rtrim(std::string &str);
+std::string trim(std::string &str);
+
 template<typename T>
 void print(std::vector<T> &vec);
+
 
 #include "ccli/all_template_implementations.hpp"
 #endif
