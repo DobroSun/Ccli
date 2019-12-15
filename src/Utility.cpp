@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <memory>
 #include <array>
+#include <iostream>
 
 #include "llvm/Support/raw_ostream.h"
 
@@ -92,29 +93,8 @@ std::vector<std::string> split(std::string &&str, char ch) {
 // Executes bash command.
 // Returns splitted output.
 std::vector<std::string> get_splitted_exec(const std::string &cmd, char ch) {
-    std::string res = exec(cmd);
-    return split(res, ch);
+    return split(exec(cmd), ch);
 }
 std::vector<std::string> get_splitted_exec(std::string &&cmd, char ch) {
-    std::string res = exec(cmd);
-    return split(res, ch);
-}
-
-
-// Prints all items from given vector.
-template<typename T>
-void print(const std::vector<T> &vec) {
-    llvm::outs() << "[";
-    for(auto el: vec) {
-        llvm::outs() << el << ", ";
-    }
-    llvm::outs() << "]\n";
-}
-template<typename T>
-void print(std::vector<T> &&vec) {
-    llvm::outs() << "[";
-    for(auto el: vec) {
-        llvm::outs() << el << ", ";
-    }
-    llvm::outs() << "]\n";
+    return split(exec(cmd), ch);
 }

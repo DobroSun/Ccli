@@ -90,3 +90,29 @@ TEST(BashExecuteCase, exec) {
         ASSERT_EQ(res3, expected3);
     }
 }
+
+typedef std::ostringstream sstr;
+sstr init_buf() {
+    sstr res;
+    std::cout.rdbuf(res.rdbuf());
+    return res;
+}
+TEST(PrintCase, print) {
+    sstr res1 = init_buf();
+    std::vector<std::string> cmd1 = {
+        "Foo", "Boo", "Bar",
+        };
+    std::string expected1 = "[Foo, Boo, Bar]\n";
+    print(cmd1);
+    ASSERT_EQ(res1.str(), expected1);
+
+
+    sstr res2 = init_buf();
+    std::vector<double> cmd2 = {
+        2.32, 23.1, 324,
+        };
+    std::string expected2 = "[2.32, 23.1, 324]\n";
+    print(cmd2);
+    ASSERT_EQ(res2.str(), expected2);
+
+}

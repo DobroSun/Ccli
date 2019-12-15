@@ -23,7 +23,7 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
     // Just debug.
     llvm::MemoryBuffer *buffer = InputFile.getBuffer();
     std::string str(buffer->getBufferStart(), buffer->getBufferEnd());
-    debug() << str << " <- String of File content" << std::endl;
+    debug() << "String of File content: " << str <<  std::endl;
 
     // Is this necessary to define?
     clang::FrontendOptions &FrontOpts = CI->getFrontendOpts();
@@ -46,10 +46,9 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
 
 
     if(ToolAction->BeginSourceFile(*CI, InputFile)) {
-
         bool res = ToolAction->Execute();
         if(!res) {
-            llvm::errs() << "Execution of action failed!\n";
+            debug() << "Execution of action failed!" << std::endl;
             return false;
         }
         

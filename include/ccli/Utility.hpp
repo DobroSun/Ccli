@@ -16,7 +16,7 @@ std::vector<std::string> get_splitted_exec(const std::string &cmd, char ch='\n')
 std::vector<std::string> get_splitted_exec(std::string &&cmd, char ch='\n');
 
 template<typename T>
-void print(const std::vector<T> &vec);
-template<typename T>
-void print(std::vector<T> &&vec);
+void print(std::vector<T> &vec);
+
+#include "ccli/all_template_implementations.hpp"
 #endif

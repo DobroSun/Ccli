@@ -56,9 +56,9 @@ void Init_CI(clang::CompilerInstance &CI) {
 }
 
 
-void Get_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
-    std::string get_headers_cmd  = GET_HEADERS_CMD;
-    std::vector<std::string> headers = get_splitted_exec(get_headers_cmd);
+void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
+    std::vector<std::string> headers = get_splitted_exec(GET_HEADERS_CMD);
+
 
     clang::FileManager &FileManager = CI.getFileManager();
     clang::SourceManager &SourceManager = CI.getSourceManager();
@@ -70,6 +70,13 @@ void Get_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
     std::shared_ptr<clang::HeaderSearchOptions> HeaderSearchOptions =
         std::make_shared<clang::HeaderSearchOptions>();
 
+    debug() << "Start of print" << std::endl;
+    //print(headers);
+    debug() << "End of print" << std::endl;
+
+    //HeaderSearchOptions->UseStandardSystemIncludes = 1;
+
+/*
     std::vector<clang::DirectoryLookup> Dirs;
     
     for(std::string path: headers) {
@@ -81,10 +88,10 @@ void Get_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
         debug() << path << " <- Pushing to vector of dirs" << std::endl;
         Dirs.push_back(lookup);
     }
-
+*/
     HS = new clang::HeaderSearch(HeaderSearchOptions, SourceManager,
        DiagnosticsEngine, LangOpts, &TargetInfo);
-    HS->SetSearchPaths(Dirs, 0, 0, true);
+    //HS->SetSearchPaths(Dirs, 0, 0, true);
     debug() << "******** HeaderSearch is initialized ********" << std::endl;
 }
 
@@ -112,7 +119,7 @@ int main(int argc, const char **argv) {
 
 
     Init_CI(CI);
-    Get_HS(CI, HS.get());
+    Init_HS(CI, HS.get());
 
 
     ccli::CcliTool Tool(CI, *(HS.get()));
