@@ -1,5 +1,5 @@
-#ifndef GLOBALCONTEXTCPP
-#define GLOBALCONTEXTCPP
+#ifndef GLOBALCONTEXT_CPP
+#define GLOBALCONTEXT_CPP
 #include <string>
 #include <vector>
 

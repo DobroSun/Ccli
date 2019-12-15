@@ -27,11 +27,7 @@ void GlobalContext::add_command(std::string cmd) {
 }
 
 // Pushes all commands to string,
-<<<<<<< Updated upstream
-// representing file content,
-=======
 // Representing file content.
->>>>>>> Stashed changes
 // Than returns it.
 std::string GlobalContext::get_context() {
     std::string file_buffer;

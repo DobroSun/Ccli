@@ -11,7 +11,7 @@
 #include "ccli/GlobalContext.hpp"
 #include "ccli/exec_expr.hpp"
 #include "ccli/Utility.hpp"
-#include "ccli/DeclMatcher.hpp"
+#include "ccli/DeclFindingAction.hpp"
 #include "ccli/Logger.hpp"
 
 #include <readline/readline.h>
@@ -155,7 +155,6 @@ int main(int argc, const char **argv) {
 */
     ccli::CcliTool Tool(CI, HeaderSearch);
     ccli::GlobalContext GlobalContext;
-    ccli::DeclMatcher DeclMatcher;
 
 
     // Frontend Actions that will be processed

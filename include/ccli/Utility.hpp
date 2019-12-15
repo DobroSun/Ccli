@@ -1,5 +1,5 @@
-#ifndef UTILITYCPP
-#define UTILITYCPP
+#ifndef UTILITY_CPP
+#define UTILITY_CPP
 #include <vector>
 #include <string>
 

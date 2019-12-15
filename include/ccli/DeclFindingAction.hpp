@@ -1,5 +1,5 @@
-#ifndef DECLMATCHER_CPP
-#define DECLMATCHER_CPP
+#ifndef DECLFINDINGACTION_CPP
+#define DECLFINDINGACTION_CPP
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/AST/ASTContext.h"
@@ -35,15 +35,6 @@ class DeclFinder: public clang::ASTConsumer {
 public:
     DeclFinder(clang::SourceManager &SM): Visitor(SM) {}
     void HandleTranslationUnit(clang::ASTContext &Context) final;
-};
-
-
-class DeclMatcher {
-    
-public:
-    DeclMatcher();
-    bool findDecl(std::string cmd);
-    //std::string getAST(std::string cmd);
 };
 }
 #endif

@@ -6,7 +6,7 @@ add_library(
         CcliTool.cpp
         GlobalContext.cpp
         Utility.cpp
-        DeclMatcher.cpp
+        DeclFindingAction.cpp
 )
 
 target_include_directories(ccli PUBLIC "${LLVM_INCLUDE_DIR}")

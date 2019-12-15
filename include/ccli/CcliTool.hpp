@@ -1,5 +1,5 @@
-#ifndef CCLI_RUNTOOLONCODE
-#define CCLI_RUNTOOLONCODE
+#ifndef CCLITOOL_CPP
+#define CCLITOOL_CPP
 #include <string>
 #include <vector>
 #include <memory>

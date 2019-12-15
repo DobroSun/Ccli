@@ -31,15 +31,5 @@ bool DeclVisitor::VisitDecl(clang::Decl *Decl) {
     return true;
 }
 
-
-DeclMatcher::DeclMatcher() {
-
-}
-
-bool DeclMatcher::findDecl(std::string cmd) {
-    int res = clang::tooling::runToolOnCode(new DeclFindingAction, cmd);
-    return res;
-}
-
 } // namspace
 
