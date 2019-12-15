@@ -60,7 +60,27 @@ TEST(SplitCase, split) {
     ASSERT_EQ(res2, expected2);
     ASSERT_EQ(res3, expected3);
     ASSERT_EQ(res4, expected4);
+}
 
 
+TEST(BashExecuteCase, exec) {
+    if(!exec("which ghci").empty()) {
+        std::string cmd1 = "\'2 + 3\'";
+        std::string cmd2 = "\'print 15.02\'";
+        std::string cmd3 = "\':t max\'";
 
+        std::string wrapper = "ghci -e ";
+
+        std::string res1 = exec(wrapper + cmd1);
+        std::string res2 = exec(wrapper + cmd2);
+        std::string res3 = exec(wrapper + cmd3);
+
+
+        std::string expected1 = "5\n";
+        std::string expected2 = "15.02\n";
+        std::string expected3 = "max :: Ord a => a -> a -> a\n";
+        ASSERT_EQ(res1, expected1);
+        ASSERT_EQ(res2, expected2);
+        ASSERT_EQ(res3, expected3);
+    }
 }

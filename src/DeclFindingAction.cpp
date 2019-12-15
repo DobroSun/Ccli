@@ -1,4 +1,4 @@
-#include "ccli/DeclMatcher.hpp"
+#include "ccli/DeclFindingAction.hpp"
 
 #include "clang/Tooling/Tooling.h"
 #include <iostream>

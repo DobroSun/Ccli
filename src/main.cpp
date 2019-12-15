@@ -24,7 +24,7 @@
 #include <cstring>
 
 
-
+#define GET_HEADERS_CMD "gcc -v -E -xc - < /dev/null 2>&1 | sed -ne '/starts here/,/End of/p' | grep -v '#include' | grep -v 'End of search list'"
 
 
 static llvm::cl::extrahelp
@@ -34,7 +34,7 @@ llvm::cl::OptionCategory CcliCategory("ccli options");
 static char CcliUsage[] = "Usage: ccli [option]";
 
 
-bool Init_CI(clang::CompilerInstance &CI) {
+void Init_CI(clang::CompilerInstance &CI) {
     // Initialize DiagnosticsEngine.
     CI.createDiagnostics();
     clang::DiagnosticsEngine &DiagnosticsEngine = CI.getDiagnostics();
@@ -53,16 +53,40 @@ bool Init_CI(clang::CompilerInstance &CI) {
 
     // Initialize LangOptions.
     clang::LangOptions LangOpts;
+    debug() << "******** CompilerInstance is initialized ********" << std::endl;
+}
+
+
+void Get_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
+    std::string get_headers_cmd  = GET_HEADERS_CMD;
+    std::vector<std::string> headers = get_splitted_exec(get_headers_cmd);
+
+    clang::FileManager &FileManager = CI.getFileManager();
+    clang::SourceManager &SourceManager = CI.getSourceManager();
+    clang::DiagnosticsEngine &DiagnosticsEngine = CI.getDiagnostics();
+    clang::LangOptions LangOpts = CI.getLangOpts();
+    clang::TargetInfo &TargetInfo = CI.getTarget();
 
     // Initialize HeaderSearch.
-    std::string res = exec("gcc -v -E -xc - < /dev/null 2>&1 | sed -ne '/starts here/,/End of/p' | grep -v '#include' | grep -v 'End of search list'");
     std::shared_ptr<clang::HeaderSearchOptions> HeaderSearchOptions =
         std::make_shared<clang::HeaderSearchOptions>();
-    //HeaderSearchOptions.UserEntries = res;
-    clang::HeaderSearch(HeaderSearchOptions, SourceManager,
-                        DiagnosticsEngine, LangOpts, TI);
 
-    return true;
+    std::vector<clang::DirectoryLookup> Dirs;
+    
+    for(std::string path: headers) {
+        clang::DirectoryLookup lookup = clang::DirectoryLookup(
+                FileManager.getDirectory(path),
+                clang::SrcMgr::CharacteristicKind::C_System,
+                false);
+
+        debug() << path << " <- Pushing to vector of dirs" << std::endl;
+        Dirs.push_back(lookup);
+    }
+
+    HS = new clang::HeaderSearch(HeaderSearchOptions, SourceManager,
+       DiagnosticsEngine, LangOpts, &TargetInfo);
+    HS->SetSearchPaths(Dirs, 0, 0, true);
+    debug() << "******** HeaderSearch is initialized ********" << std::endl;
 }
 
 
@@ -84,78 +108,16 @@ int main(int argc, const char **argv) {
     // And add help... and so forth.
     clang::tooling::CommonOptionsParser option(argc, argv, CcliCategory, CcliUsage);
 
-
-
     clang::CompilerInstance CI(std::make_shared<clang::PCHContainerOperations>());
+    std::unique_ptr<clang::HeaderSearch> HS;
+
+
     Init_CI(CI);
-/*
-    CI.createDiagnostics();
+    Get_HS(CI, HS.get());
 
 
-    auto TO = std::make_shared<clang::TargetOptions>();
-    TO->Triple = llvm::sys::getDefaultTargetTriple();
-    clang::TargetInfo *TI = clang::TargetInfo::CreateTargetInfo(CI.getDiagnostics(), TO);
-    CI.setTarget(TI);
-
-    CI.createFileManager();
-    clang::FileManager &FileManager = CI.getFileManager();
-    CI.createSourceManager(FileManager);
-    clang::SourceManager &SourceManager = CI.getSourceManager();
-
-    CI.createPreprocessor(clang::TU_Module);
-    CI.createASTContext();
-*/
-
-/*
-    llvm::StringRef code = "vod foo();";
-    std::string filename = "ccli.cpp";
-    std::unique_ptr<llvm::MemoryBuffer> MB(llvm::MemoryBuffer::getMemBuffer(code, filename));
-
-    // Create VirtualFile
-    clang::FrontendInputFile input_file((&MB)->get(), clang::InputKind());
-
-    clang::FrontendOptions &FrontOpts = CI.getFrontendOpts();
-    FrontOpts.Inputs = std::vector<clang::FrontendInputFile> {input_file};
-
-
-    ccli::DeclFindingAction action;
-    if(action.BeginSourceFile(CI, CI.getFrontendOpts().Inputs[0])) {
-        action.Execute();
-
-        auto &AstContext = CI.getASTContext();
-        auto &DiagnosticsEg = AstContext.getDiagnostics();
-        auto DiagnosticsCs = DiagnosticsEg.getClient();
-        auto num_errs = DiagnosticsCs->getNumErrors();
-
-        debug() << "Number of errors in ASTContext: " << num_errs << std::endl;;
-
-        action.EndSourceFile();
-    }
-*/
-
-/*
-    auto &AstContext = CI.getASTContext();
-    auto &DiagnosticsEg = AstContext.getDiagnostics();
-    auto DiagnosticsCs = DiagnosticsEg.getClient();
-    auto num_errs = DiagnosticsCs->getNumErrors();
-
-    debug() << "Number of errors in ASTContext: " << num_errs << std::endl;;
-
-
-    ccli::DeclFinder MyConsumer(SourceManager);
-    clang::ParseAST(CI.getPreprocessor(), &MyConsumer, CI.getASTContext());
-
-
-    auto &AstContext1 = CI.getASTContext();
-    auto &DiagnosticsEg1 = AstContext1.getDiagnostics();
-    auto DiagnosticsCs1 = DiagnosticsEg1.getClient();
-    auto num_errs1 = DiagnosticsCs1->getNumErrors();
-
-    debug() << "Number of errors in ASTContext: " << num_errs1 << std::endl;;
-*/
-    ccli::CcliTool Tool(CI, HeaderSearch);
+    ccli::CcliTool Tool(CI, *(HS.get()));
     ccli::GlobalContext GlobalContext;
-
 
     // Frontend Actions that will be processed
     // With CcliTool.
@@ -183,9 +145,10 @@ int main(int argc, const char **argv) {
 
         add_history(cmd);
         GlobalContext.add_command(cmd);
-        std::string compiled_str = GlobalContext.get_context();
+        std::string context_string = GlobalContext.get_context();
 
-        Tool.run(Analysis_Act.get(), compiled_str);
+
+        Tool.run(Analysis_Act.get(), context_string);
 
         //Tool.run(Analysis_Act, compiled_str);
 

@@ -1,6 +1,6 @@
+#include <stdexcept>
 #include <memory>
 #include <array>
-#include <stdexcept>
 
 #include "llvm/Support/raw_ostream.h"
 
@@ -9,7 +9,15 @@
 // Joins all strings in vector.
 // Returns resulted string.
 // Separator is ch, by deafault '\n'.
-std::string join(std::vector<std::string> &context, char ch) {
+std::string join(const std::vector<std::string> &context, char ch) {
+    std::string res;
+    for(auto i: context) {
+        res += i;
+        res += ch;
+    }
+    return res;
+}
+std::string join(std::vector<std::string> &&context, char ch) {
     std::string res;
     for(auto i: context) {
         res += i;
@@ -18,9 +26,23 @@ std::string join(std::vector<std::string> &context, char ch) {
     return res;
 }
 
+
 // Executes specified bash command
 // In terminal and gives output in string.
-std::string exec(std::string cmd) {
+std::string exec(const std::string &cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe) {
+		llvm::errs() << "Processing popen failed!\n";
+		return "";
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+std::string exec(std::string &&cmd) {
     std::array<char, 128> buffer;
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
@@ -35,7 +57,23 @@ std::string exec(std::string cmd) {
 }
 
 
-std::vector<std::string> split(std::string str, char ch) {
+// Splits given string with ch.
+// Returns vector of strings.
+std::vector<std::string> split(const std::string &str, char ch) {
+	std::vector<std::string> res;
+    std::string accumulate; 
+	for(auto s_ch: str) {
+		if(s_ch == ch) {
+            res.push_back(std::move(accumulate));
+            continue;
+        }
+        accumulate += s_ch;
+	}
+    if(!accumulate.empty())
+        res.push_back(accumulate);
+    return res;
+}
+std::vector<std::string> split(std::string &&str, char ch) {
 	std::vector<std::string> res;
     std::string accumulate; 
 	for(auto s_ch: str) {
@@ -50,3 +88,33 @@ std::vector<std::string> split(std::string str, char ch) {
     return res;
 }
 
+
+// Executes bash command.
+// Returns splitted output.
+std::vector<std::string> get_splitted_exec(const std::string &cmd, char ch) {
+    std::string res = exec(cmd);
+    return split(res, ch);
+}
+std::vector<std::string> get_splitted_exec(std::string &&cmd, char ch) {
+    std::string res = exec(cmd);
+    return split(res, ch);
+}
+
+
+// Prints all items from given vector.
+template<typename T>
+void print(const std::vector<T> &vec) {
+    llvm::outs() << "[";
+    for(auto el: vec) {
+        llvm::outs() << el << ", ";
+    }
+    llvm::outs() << "]\n";
+}
+template<typename T>
+void print(std::vector<T> &&vec) {
+    llvm::outs() << "[";
+    for(auto el: vec) {
+        llvm::outs() << el << ", ";
+    }
+    llvm::outs() << "]\n";
+}

@@ -34,16 +34,15 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
     clang::FileManager &FileManager = CI->getFileManager();
     clang::SourceManager &SourceManager = CI->getSourceManager();
     clang::DependencyOutputOptions DepOutputOpts = CI->getDependencyOutputOpts();
-/*
+
     CI->InitializeSourceManager(
                 InputFile,
                 DiagnosticsEngine,
                 FileManager,
                 SourceManager,
-                HeaderSearch,
+                HS,
                 DepOutputOpts,
                 FrontOpts);
-*/
 
 
     if(ToolAction->BeginSourceFile(*CI, InputFile)) {
