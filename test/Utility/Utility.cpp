@@ -63,11 +63,17 @@ TEST(SplitCase, split) {
 }
 
 
+std::string wrp(const std::string &str) {
+    return "\'" + str + "\'";
+}
+std::string nl(const std::string &str) {
+    return str + "\n";
+}
 TEST(BashExecuteCase, exec) {
     if(!exec("which ghci").empty()) {
-        std::string cmd1 = "\'2 + 3\'";
-        std::string cmd2 = "\'print 15.02\'";
-        std::string cmd3 = "\':t max\'";
+        std::string cmd1 = wrp("2 + 3");
+        std::string cmd2 = wrp("print 15.02");
+        std::string cmd3 = wrp(":t max");
 
         std::string wrapper = "ghci -e ";
 
@@ -76,9 +82,9 @@ TEST(BashExecuteCase, exec) {
         std::string res3 = exec(wrapper + cmd3);
 
 
-        std::string expected1 = "5\n";
-        std::string expected2 = "15.02\n";
-        std::string expected3 = "max :: Ord a => a -> a -> a\n";
+        std::string expected1 = nl("5");
+        std::string expected2 = nl("15.02");
+        std::string expected3 = nl("max :: Ord a => a -> a -> a");
         ASSERT_EQ(res1, expected1);
         ASSERT_EQ(res2, expected2);
         ASSERT_EQ(res3, expected3);

@@ -1,7 +1,7 @@
 #include "clang/Tooling/Tooling.h"
 
-#include "ccli/CcliTool.hpp"
 #include "ccli/Logger.hpp"
+#include "ccli/CcliTool.hpp"
 
 
 namespace ccli {
@@ -23,7 +23,7 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
     // Just debug.
     llvm::MemoryBuffer *buffer = InputFile.getBuffer();
     std::string str(buffer->getBufferStart(), buffer->getBufferEnd());
-    std::cout << str << " <- String of File content" << std::endl;
+    debug() << str << " <- String of File content" << std::endl;
 
     // Is this necessary to define?
     clang::FrontendOptions &FrontOpts = CI->getFrontendOpts();
@@ -59,7 +59,7 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
         clang::DiagnosticConsumer *DiagnosticsCs = DiagnosticsEg.getClient();
         num_errs = DiagnosticsCs->getNumErrors();
 
-        std::cout << num_errs << " <- Number of errors in ASTContext" << std::endl;
+        debug() << num_errs << " <- Number of errors in ASTContext" << std::endl;
         ToolAction->EndSourceFile();
     }
     return (!get_errs())? true: false;

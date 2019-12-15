@@ -2,26 +2,19 @@
 #define LOGGER_CPP
 
 #include <ostream>
+#include <iostream>
 
-// Works so shitty.
-// Doesn't handle numbers, ... .
-// All except std::string and chars*.
-// T&& and std::forwawd<T> doesn't help.
-// TODO: Fix debug. It works correct only in main.cpp.
-class debug {
+class debug: public std::ostream, std::streambuf {
 public:
-    template<class T>
-    inline debug& operator<<(T str) {
-    #ifdef DEBUG
-        std::cout << str;
-    #endif
-        return *this;
+    debug(): std::ostream(this) {}
+    int overflow(int c) {
+        #ifdef DEBUG
+        foo(c);
+        #endif
+        return 0;
     }
-    inline debug& operator<<(std::ostream& (*fun)(std::ostream&)) {
-    #ifdef DEBUG
-        std::cout << std::endl;
-    #endif
-        return *this;
+    void foo(char c) {
+        std::cout.put(c);
     }
 };
 #endif
