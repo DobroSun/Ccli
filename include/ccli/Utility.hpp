@@ -19,6 +19,10 @@ std::string ltrim(std::string &str);
 std::string rtrim(std::string &str);
 std::string trim(std::string &str);
 
+
+template<typename T, typename A>
+A map(T func, A &vec);
+
 template<typename T>
 void print(std::vector<T> &vec);
 

@@ -101,8 +101,6 @@ std::vector<std::string> get_splitted_exec(std::string &&cmd, char ch) {
 }
 
 
-
-
 std::string ltrim(std::string &str) {
     return std::regex_replace(str, std::regex("^ +"), "");
 }

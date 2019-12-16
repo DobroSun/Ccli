@@ -26,7 +26,7 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
 
     // Is this necessary to define?
     clang::FrontendOptions &FrontOpts = CI->getFrontendOpts();
-    FrontOpts.Inputs = std::vector<clang::FrontendInputFile> {InputFile};
+    FrontOpts.Inputs.emplace_back("ccli.cpp", clang::FrontendOptions::getInputDenkForExtension("ccli.cpp");
 
 
     clang::DiagnosticsEngine &DiagnosticsEngine = CI->getDiagnostics();
@@ -44,7 +44,7 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
                 FrontOpts);
 
 
-    if(ToolAction->BeginSourceFile(*CI, InputFile)) {
+    if(ToolAction->BeginSourceFile(*CI, FrontOpts.Inputs[0])) {
         bool res = ToolAction->Execute();
         if(!res) {
             debug() << "Execution of action failed!" << std::endl;

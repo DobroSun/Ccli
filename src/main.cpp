@@ -58,11 +58,8 @@ void Init_CI(clang::CompilerInstance &CI) {
 
 
 void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
-    std::vector<std::string> headers = get_splitted_exec(GET_HEADERS_CMD);
-    // !!!!!!!!!!!!!!!!!
-    // Have to ltrim all from headers.
-    // Because they cannot be added as Paths,
-    // For HeaderSearchOptions.
+    std::vector<std::string> un_headers = get_splitted_exec(GET_HEADERS_CMD);
+    std::vector<std::string> headers = map(ltrim, un_headers);
 
 
     clang::FileManager &FileManager = CI.getFileManager();
@@ -75,23 +72,23 @@ void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
     std::shared_ptr<clang::HeaderSearchOptions> HeaderSearchOptions =
         std::make_shared<clang::HeaderSearchOptions>();
 
-    debug() << "Start of print" << std::endl;
+    debug() << "Received headers:" << std::endl;
     print(headers);
-    debug() << "End of print" << std::endl;
 
 
-    //HeaderSearchOptions->UseBuiltinIncludes = 1;
-    //HeaderSearchOptions->UseStandardSystemIncludes = 1;
-    //HeaderSearchOptions->UseStandardCXXIncludes = 1;
+    HeaderSearchOptions->UseBuiltinIncludes = 1;
+    HeaderSearchOptions->UseStandardSystemIncludes = 1;
+    HeaderSearchOptions->UseStandardCXXIncludes = 1;
+    //HeaderSearchOptions->ResourceDir = 
 
-/*   
     for(std::string &path: headers) {
         HeaderSearchOptions->AddPath(
             path, clang::frontend::System, false, false);
         debug() << path << " <- added to HeaderPaths" << std::endl;
     }
-*/
 
+
+/*
     std::vector<clang::DirectoryLookup> Dirs;
 
     for(std::string path: headers) {
@@ -103,10 +100,10 @@ void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
             debug() << "Clang couldn't Interpret this path -> " << path << std::endl;
             continue;
         }
-        debug() << path << " <- Pushing to vector of dirs" << std::endl;
+        debug() << path << " <- Pushed to vector of dirs" << std::endl;
         Dirs.push_back(lookup);
     }
-
+*/
 
     HS = new clang::HeaderSearch(HeaderSearchOptions, SourceManager,
        DiagnosticsEngine, LangOpts, &TargetInfo);

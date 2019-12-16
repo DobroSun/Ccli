@@ -190,3 +190,29 @@ TEST(TrimCase, trim) {
     ASSERT_EQ(res4, expected4);
     ASSERT_EQ(res5, expected5);
 }
+
+double dob(double &n) {
+    n *= n;
+    return n;
+}
+std::string oh(std::string n) {
+    return n + "!";
+}
+TEST(MapCase, map) {
+    std::vector<int> cmd1 = {1, 2, 3, 4};
+    std::vector<double> cmd2 = {1, 2, 3, 4};
+    std::vector<std::string> cmd3 = {"l", "foo", "bar"};
+
+    std::vector<int> res1 = map([](int &n){ return ++n;}, cmd1);
+    std::vector<double> res2 = map(dob, cmd2);
+    std::vector<std::string> res3 = map(oh, cmd3);
+
+    std::vector<int> expected1 = {2, 3, 4, 5};
+    std::vector<double> expected2 = {1, 4, 9, 16};
+    std::vector<std::string> expected3 = {"l!", "foo!", "bar!"};
+
+
+    ASSERT_EQ(res1, expected1);
+    ASSERT_EQ(res2, expected2);
+    ASSERT_EQ(res3, expected3);
+}

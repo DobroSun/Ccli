@@ -1,5 +1,9 @@
+#ifndef ALL_TEMPLATE_IMPLEMENTATIONS
+#define ALL_TEMPLATE_IMPLEMENTATIONS
+
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 // Prints all items from given vector.
 template<typename T>
@@ -13,3 +17,11 @@ void print(std::vector<T> &vec) {
     }
     std::cout << "]\n";
 }
+
+
+template<typename T, typename A>
+A map(T func, A &vec) {
+    std::transform(vec.begin(), vec.end(), vec.begin(), func);
+    return vec;
+}
+#endif
