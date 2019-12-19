@@ -6,6 +6,7 @@
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Lex/HeaderSearch.h"
 #include "clang/Frontend/FrontendActions.h"
+#include "clang/Frontend/CompilerInvocation.h"
 
 #include "ccli/CcliTool.hpp"
 #include "ccli/GlobalContext.hpp"
@@ -13,6 +14,7 @@
 #include "ccli/Utility.hpp"
 #include "ccli/DeclFindingAction.hpp"
 #include "ccli/Logger.hpp"
+#include "ccli/HeaderSearch.hpp"
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -24,7 +26,6 @@
 #include <cstring>
 
 
-#define GET_HEADERS_CMD "gcc -v -E -xc - < /dev/null 2>&1 | sed -ne '/starts here/,/End of/p' | grep -v '#include' | grep -v 'End of search list'"
 
 
 static llvm::cl::extrahelp
@@ -37,7 +38,7 @@ static char CcliUsage[] = "Usage: ccli [option]";
 void Init_CI(clang::CompilerInstance &CI) {
     // Initialize DiagnosticsEngine.
     CI.createDiagnostics();
-    //clang::DiagnosticsEngine &DiagnosticsEngine = CI.getDiagnostics();
+    clang::DiagnosticsEngine &DiagnosticsEngine = CI.getDiagnostics();
 
     // Initialize llvm TargetInfo.
     auto TO = std::make_shared<clang::TargetOptions>();
@@ -52,15 +53,31 @@ void Init_CI(clang::CompilerInstance &CI) {
     //clang::SourceManager &SourceManager = CI.getSourceManager();
 
     // Initialize LangOptions.
-    clang::LangOptions LangOpts;
+    clang::LangOptions &LangOpts = CI.getLangOpts();
+
+    // Initialize Preprocessor.
+    CI.createPreprocessor(clang::TU_Module);
+    clang::Preprocessor &Preprocessor = CI.getPreprocessor();
+
+    // Initialize HeaderSearch
+    // clang::HeaderSearch &HS = Preprocessor.getHeaderSearchInfo();
+
+
+
+
+
+    std::vector<const char*> header_dirs = get_headers();
+    llvm::ArrayRef<const char*> args(header_dirs);
+    // Initialize Invocation
+    std::shared_ptr<clang::CompilerInvocation> CInv(new clang::CompilerInvocation);
+    CInv->CreateFromArgs(*(CInv.get()), args.begin(), args.end(), DiagnosticsEngine);
+    CI.setInvocation(CInv);
+
     debug() << "******** CompilerInstance is initialized ********" << std::endl;
 }
 
-
+/*
 void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
-    std::vector<std::string> un_headers = get_splitted_exec(GET_HEADERS_CMD);
-    std::vector<std::string> headers = map(ltrim, un_headers);
-
 
     clang::FileManager &FileManager = CI.getFileManager();
     clang::SourceManager &SourceManager = CI.getSourceManager();
@@ -70,25 +87,27 @@ void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
 
     // Initialize HeaderSearch.
     std::shared_ptr<clang::HeaderSearchOptions> HeaderSearchOptions =
-        std::make_shared<clang::HeaderSearchOptions>();
+        std::make_shared<clang::HeaderSearchOptions>(CI.getHeaderSearchOpts());
 
     debug() << "Received headers:" << std::endl;
     print(headers);
 
-
     HeaderSearchOptions->UseBuiltinIncludes = 1;
     HeaderSearchOptions->UseStandardSystemIncludes = 1;
     HeaderSearchOptions->UseStandardCXXIncludes = 1;
-    //HeaderSearchOptions->ResourceDir = 
+    HeaderSearchOptions->ResourceDir = "/usr/lib/llvm-8/include/clang/";
 
     for(std::string &path: headers) {
         HeaderSearchOptions->AddPath(
-            path, clang::frontend::System, false, false);
-        debug() << path << " <- added to HeaderPaths" << std::endl;
+            path, clang::frontend::Angled, false, false);
+        debug() << path << " <- has been added to HeaderPaths" << std::endl;
     }
 
 
-/*
+    
+
+
+
     std::vector<clang::DirectoryLookup> Dirs;
 
     for(std::string path: headers) {
@@ -103,14 +122,14 @@ void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
         debug() << path << " <- Pushed to vector of dirs" << std::endl;
         Dirs.push_back(lookup);
     }
-*/
+
 
     HS = new clang::HeaderSearch(HeaderSearchOptions, SourceManager,
        DiagnosticsEngine, LangOpts, &TargetInfo);
     //HS->SetSearchPaths(Dirs, 0, 0, true);
     debug() << "******** HeaderSearch is initialized ********" << std::endl;
 }
-
+*/
 
 std::string welcome() {
     std::string welcome = "Hello world> ";
@@ -135,7 +154,7 @@ int main(int argc, const char **argv) {
 
 
     Init_CI(CI);
-    Init_HS(CI, HS.get());
+    //Init_HS(CI, HS.get());
 
 
     ccli::CcliTool Tool(CI, *(HS.get()));

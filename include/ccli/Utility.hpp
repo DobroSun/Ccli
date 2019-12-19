@@ -20,8 +20,14 @@ std::string rtrim(std::string &str);
 std::string trim(std::string &str);
 
 
+std::string add_I_option(const std::string &dest);
+std::string add_I_option(std::string &&dest);
+
 template<typename T, typename A>
-A map(T func, A &vec);
+A map(T func, const A &vec);
+template<typename T, typename A>
+A map(T func, A &&vec);
+
 
 template<typename T>
 void print(std::vector<T> &vec);

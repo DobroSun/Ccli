@@ -9,6 +9,8 @@ add_executable(global_tests
     Logger/Logger.cpp
 )
 
+message(STATUS "GTEST headers: ${GTEST_LIBRARIES}")
+
 target_link_libraries(global_tests
     ${GTEST_LIBRARIES}
     pthread

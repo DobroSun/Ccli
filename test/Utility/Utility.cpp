@@ -2,6 +2,9 @@
 
 #include "ccli/Utility.hpp"
 
+// Is needed for print_function.
+#define DEBUG
+
 
 TEST(JoinCase, join) {
     std::vector<std::string> cmds1 = {
@@ -216,3 +219,7 @@ TEST(MapCase, map) {
     ASSERT_EQ(res2, expected2);
     ASSERT_EQ(res3, expected3);
 }
+
+
+
+

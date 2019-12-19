@@ -3,6 +3,7 @@
 #include <array>
 #include <iostream>
 #include <regex>
+#include <cstring>
 
 #include "llvm/Support/raw_ostream.h"
 
@@ -110,4 +111,16 @@ std::string rtrim(std::string &str) {
 
 std::string trim(std::string &str) {
     return std::regex_replace(str, std::regex("^ +| +$|( ) +"), "$1");
+}
+
+
+std::string add_I_option(const std::string &dest) {
+    std::string tmp = "-I";
+    tmp += dest;
+    return tmp;
+}
+std::string add_I_option(std::string &&dest) {
+    std::string tmp = "-I";
+    tmp += dest;
+    return tmp;
 }

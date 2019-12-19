@@ -5,22 +5,29 @@
 #include <iostream>
 #include <algorithm>
 
+#include "ccli/Logger.hpp"
+
 // Prints all items from given vector.
 template<typename T>
 void print(std::vector<T> &vec) {
-    std::cout << "[";
+    debug() << "[";
     for(unsigned int i = 0; i < vec.size(); i++) {
         if((vec.size() - i) > 1)
-            std::cout << vec[i] << ", ";
+            debug() << vec[i] << ", ";
         else
-            std::cout << vec[i];
+            debug() << vec[i];
     }
-    std::cout << "]\n";
+    debug() << "]\n";
 }
 
-
+// Runs given function over a container.
 template<typename T, typename A>
-A map(T func, A &vec) {
+A map(T func, const A &vec) {
+    std::transform(vec.begin(), vec.end(), vec.begin(), func);
+    return vec;
+}
+template<typename T, typename A>
+A map(T func, A &&vec) {
     std::transform(vec.begin(), vec.end(), vec.begin(), func);
     return vec;
 }

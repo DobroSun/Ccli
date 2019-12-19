@@ -26,14 +26,16 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
 
     // Is this necessary to define?
     clang::FrontendOptions &FrontOpts = CI->getFrontendOpts();
-    FrontOpts.Inputs.emplace_back("ccli.cpp", clang::FrontendOptions::getInputDenkForExtension("ccli.cpp");
+    //FrontOpts.Inputs[0] = InputFile;
+    //FrontOpts.Inputs.emplace_back(filename, clang::FrontendOptions::getInputKindForExtension(filename));
 
-
+/*
     clang::DiagnosticsEngine &DiagnosticsEngine = CI->getDiagnostics();
     clang::FileManager &FileManager = CI->getFileManager();
     clang::SourceManager &SourceManager = CI->getSourceManager();
     clang::DependencyOutputOptions DepOutputOpts = CI->getDependencyOutputOpts();
-
+*/
+/*
     CI->InitializeSourceManager(
                 InputFile,
                 DiagnosticsEngine,
@@ -42,9 +44,9 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
                 HS,
                 DepOutputOpts,
                 FrontOpts);
+*/
 
-
-    if(ToolAction->BeginSourceFile(*CI, FrontOpts.Inputs[0])) {
+    if(ToolAction->BeginSourceFile(*CI, InputFile)) {
         bool res = ToolAction->Execute();
         if(!res) {
             debug() << "Execution of action failed!" << std::endl;
@@ -62,11 +64,8 @@ bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
     }
     return (!get_errs())? true: false;
 }
-/*
-bool CcliTool::Init_SourceManager() {
 
-}
-*/
+
 int CcliTool::get_errs() const {
     return num_errs;
 }

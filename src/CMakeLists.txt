@@ -7,6 +7,7 @@ add_library(
         GlobalContext.cpp
         Utility.cpp
         DeclFindingAction.cpp
+        HeaderSearch.cpp
 )
 
 target_include_directories(ccli PUBLIC "${LLVM_INCLUDE_DIR}")
