@@ -64,9 +64,16 @@ void Init_CI(clang::CompilerInstance &CI) {
 
 
 
+    std::vector<std::string> sheader_dirs = get_headers();
+    std::vector<const char*> header_dirs(sheader_dirs.size(), nullptr);
+    for(unsigned i = 0; i < sheader_dirs.size(); i++) {
+        header_dirs[i] = sheader_dirs[i].c_str();
+    }
+
+    debug() << "Processed headers: " << std::endl;
+    print(header_dirs);
 
 
-    std::vector<const char*> header_dirs = get_headers();
     llvm::ArrayRef<const char*> args(header_dirs);
     // Initialize Invocation
     std::shared_ptr<clang::CompilerInvocation> CInv(new clang::CompilerInvocation);
@@ -190,8 +197,8 @@ int main(int argc, const char **argv) {
         std::string context_string = GlobalContext.get_context();
 
 
-        //Tool.run(SyntaxOnlyAct.get(), context_string);
-        Tool.run(FindingAct.get(), context_string);
+        Tool.run(SyntaxOnlyAct.get(), context_string);
+        //Tool.run(FindingAct.get(), context_string);
 
         //Tool.run(Analysis_Act, compiled_str);
 

@@ -46,6 +46,13 @@ static auto extend = [&](std::vector<std::string> &dest, std::vector<std::string
     }
 };
 
+static auto add_backsl = [&](std::vector<std::string> &vec) {
+    for(unsigned i = 0; i < vec.size(); i++) {
+        vec[i] += "/";
+    }
+    return vec;
+};
+
 
 void put_subdirectories(std::vector<std::string> &vec, std::string &path) {
     std::deque<std::string> deque;
@@ -61,7 +68,6 @@ void put_subdirectories(std::vector<std::string> &vec, std::string &path) {
 
         DIR *dir = opendir(dir_path.c_str());
         struct dirent *entry = readdir(dir);
-        debug() << dir_path.c_str() << " <- Opened" << std::endl;
         while(entry) {
             if(entry->d_type == DT_DIR) {
                 if(strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
@@ -82,9 +88,10 @@ void put_subdirectories(std::vector<std::string> &vec, std::string &path) {
 
 
 
-// TODO: Rewrite all with functions and test it.
-std::vector<const char*> get_headers() {
-    std::vector<const char*> result;
+// TODO: 
+// Rewrite all lambdas with functions and test them.
+// Do processing with better asymptotics.
+std::vector<std::string> get_headers() {
     std::vector<std::string> headers;
     
     headers = get_cmd_headers();
@@ -99,11 +106,8 @@ std::vector<const char*> get_headers() {
 
 
     headers = add_I_opt(headers);
-
-    debug() << "Processed headers: " << std::endl;
-    result = make_chared(headers);
-    print(result);
-    return result;
+    headers = add_backsl(headers);
+    return headers;
 };
 
 
