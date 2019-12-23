@@ -64,17 +64,15 @@ void Init_CI(clang::CompilerInstance &CI) {
 
 
 
-    std::vector<std::string> sheader_dirs = get_headers();
-    std::vector<const char*> header_dirs(sheader_dirs.size(), nullptr);
-    for(unsigned i = 0; i < sheader_dirs.size(); i++) {
-        header_dirs[i] = sheader_dirs[i].c_str();
-    }
+    std::vector<const char*> headers;
+    std::vector<std::string> sheaders = get_headers();
+    make_headers(sheaders, headers);
 
     debug() << "Processed headers: " << std::endl;
-    print(header_dirs);
+    print(headers);
 
 
-    llvm::ArrayRef<const char*> args(header_dirs);
+    llvm::ArrayRef<const char*> args(headers);
     // Initialize Invocation
     std::shared_ptr<clang::CompilerInvocation> CInv(new clang::CompilerInvocation);
     CInv->CreateFromArgs(*(CInv.get()), args.begin(), args.end(), DiagnosticsEngine);

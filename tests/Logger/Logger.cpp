@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 
-#define DEBUG
 #include "ccli/Logger.hpp"
 
 #include <string>
@@ -14,10 +13,6 @@ sstr init_read_buf() {
     return res;
 }
 
-template<typename T>
-inline std::string stoi(T val) {
-    return std::to_string(val);
-}
 
 inline std::string nl(const std::string &str) {
     return str + "\n";

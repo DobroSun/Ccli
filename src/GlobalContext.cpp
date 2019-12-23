@@ -16,7 +16,7 @@ GlobalContext::GlobalContext() {
             "}",
             };
     _include = {
-            "#include <iostream>",
+            "#include <vector>",
             };
     filename = "ccli.cpp";
 }

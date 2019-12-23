@@ -3,4 +3,4 @@
 cd build
 cmake -DBUILD_TESTING=ON -DDEFINE_DEBUG=OFF ..
 make all
-./test/global_tests
+./tests/global_tests
