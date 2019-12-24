@@ -7,9 +7,20 @@
 
 #include "ccli/Logger.hpp"
 
-// Prints all items from given vector.
+// Prints all items from given collection.
 template<typename T>
-void print(std::vector<T> &vec) {
+void print(const std::vector<T> &vec) {
+    debug() << "[";
+    for(unsigned int i = 0; i < vec.size(); i++) {
+        if((vec.size() - i) > 1)
+            debug() << vec[i] << ", ";
+        else
+            debug() << vec[i];
+    }
+    debug() << "]\n";
+}
+template<typename T>
+void print(std::vector<T> &&vec) {
     debug() << "[";
     for(unsigned int i = 0; i < vec.size(); i++) {
         if((vec.size() - i) > 1)

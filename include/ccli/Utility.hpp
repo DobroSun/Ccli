@@ -30,7 +30,9 @@ A map(T func, A &&vec);
 
 
 template<typename T>
-void print(std::vector<T> &vec);
+void print(const std::vector<T> &vec);
+template<typename T>
+void print(std::vector<T> &&vec);
 
 
 #include "ccli/all_template_implementations.hpp"
