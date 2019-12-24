@@ -6,68 +6,20 @@
 
 namespace ccli {
 
-CcliTool::CcliTool(clang::CompilerInstance &CI_, clang::HeaderSearch &HS_) {
-    CI = &CI_;
-    HS = &HS_;
-    std::string filename = "ccli.cpp";
-}
+
+bool CcliTool::run(std::unique_ptr<clang::tooling::FrontendActionFactory> ToolAction, std::string &cmd) {
+    mapVirtualFile("ccli.cpp", "#include <string>");
+
+    clang::tooling::ArgumentsAdjuster adj = clang::tooling::getClangSyntaxOnlyAdjuster();
+
+    llvm::ArrayRef<std::pair<std::unique_ptr<clang::tooling::FrontendActionFactory>, clang::tooling::ArgumentsAdjuster>> args;
+    std::pair<std::unique_ptr<clang::tooling::FrontendActionFactory>, clang::tooling::ArgumentsAdjuster> pr = std::make_pair(ToolAction, adj);
 
 
-bool CcliTool::run(clang::FrontendAction *ToolAction, std::string &cmd) {
-    // Create MemoryBuffer and InputFile.
-    llvm::StringRef code = cmd;
-    std::unique_ptr<llvm::MemoryBuffer> MB = llvm::MemoryBuffer::getMemBufferCopy(code);
-    clang::FrontendInputFile InputFile((&MB)->get(), clang::InputKind());
+    llvm::Error res = execute(args);
 
-
-    // Just debug.
-    llvm::MemoryBuffer *buffer = InputFile.getBuffer();
-    std::string str(buffer->getBufferStart(), buffer->getBufferEnd());
-
-    // Is this necessary to define?
-    clang::FrontendOptions &FrontOpts = CI->getFrontendOpts();
-    //FrontOpts.Inputs[0] = InputFile;
-    //FrontOpts.Inputs.emplace_back(filename, clang::FrontendOptions::getInputKindForExtension(filename));
-
-/*
-    clang::DiagnosticsEngine &DiagnosticsEngine = CI->getDiagnostics();
-    clang::FileManager &FileManager = CI->getFileManager();
-    clang::SourceManager &SourceManager = CI->getSourceManager();
-    clang::DependencyOutputOptions DepOutputOpts = CI->getDependencyOutputOpts();
-*/
-/*
-    CI->InitializeSourceManager(
-                InputFile,
-                DiagnosticsEngine,
-                FileManager,
-                SourceManager,
-                HS,
-                DepOutputOpts,
-                FrontOpts);
-*/
-
-    if(ToolAction->BeginSourceFile(*CI, InputFile)) {
-        bool res = ToolAction->Execute();
-        if(!res) {
-            debug() << "Execution of action failed!" << std::endl;
-            return false;
-        }
-        
-        // Get number of errors occured.
-        clang::ASTContext &AstContext = CI->getASTContext();
-        clang::DiagnosticsEngine &DiagnosticsEg = AstContext.getDiagnostics();
-        clang::DiagnosticConsumer *DiagnosticsCs = DiagnosticsEg.getClient();
-        num_errs = DiagnosticsCs->getNumErrors();
-
-        debug() << num_errs << " <- Number of errors in ASTContext" << std::endl;
-        ToolAction->EndSourceFile();
-    }
-    return (!get_errs())? true: false;
-}
-
-
-int CcliTool::get_errs() const {
-    return num_errs;
+    
+    return (res)? 1: 0;
 }
 
 } // namespace

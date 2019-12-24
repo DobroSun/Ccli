@@ -7,6 +7,7 @@
 #include "clang/Lex/HeaderSearch.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Frontend/CompilerInvocation.h"
+#include "clang/StaticAnalyzer/Frontend/FrontendActions.h"
 
 #include "ccli/CcliTool.hpp"
 #include "ccli/GlobalContext.hpp"
@@ -82,57 +83,12 @@ void Init_CI(clang::CompilerInstance &CI) {
 }
 
 /*
-void Init_HS(clang::CompilerInstance &CI, clang::HeaderSearch *HS) {
+void Init_CcliTool(ccli::CcliTool &Tool) {
+    Tool.clearArgumentsAdjusters();
+    Tool.appendArgumentsAdjuster(clang::tooling::getClangStripOutputAdjuster());
+    Tool.appendArgumentsAdjuster(clang::tooling::getClangStripDependencyFileAdjuster());
 
-    clang::FileManager &FileManager = CI.getFileManager();
-    clang::SourceManager &SourceManager = CI.getSourceManager();
-    clang::DiagnosticsEngine &DiagnosticsEngine = CI.getDiagnostics();
-    clang::LangOptions LangOpts = CI.getLangOpts();
-    clang::TargetInfo &TargetInfo = CI.getTarget();
-
-    // Initialize HeaderSearch.
-    std::shared_ptr<clang::HeaderSearchOptions> HeaderSearchOptions =
-        std::make_shared<clang::HeaderSearchOptions>(CI.getHeaderSearchOpts());
-
-    debug() << "Received headers:" << std::endl;
-    print(headers);
-
-    HeaderSearchOptions->UseBuiltinIncludes = 1;
-    HeaderSearchOptions->UseStandardSystemIncludes = 1;
-    HeaderSearchOptions->UseStandardCXXIncludes = 1;
-    HeaderSearchOptions->ResourceDir = "/usr/lib/llvm-8/include/clang/";
-
-    for(std::string &path: headers) {
-        HeaderSearchOptions->AddPath(
-            path, clang::frontend::Angled, false, false);
-        debug() << path << " <- has been added to HeaderPaths" << std::endl;
-    }
-
-
-    
-
-
-
-    std::vector<clang::DirectoryLookup> Dirs;
-
-    for(std::string path: headers) {
-        clang::DirectoryLookup lookup = clang::DirectoryLookup(
-                FileManager.getDirectory(path),
-                clang::SrcMgr::CharacteristicKind::C_System,
-                false);
-        if(!lookup.getDir()) {
-            debug() << "Clang couldn't Interpret this path -> " << path << std::endl;
-            continue;
-        }
-        debug() << path << " <- Pushed to vector of dirs" << std::endl;
-        Dirs.push_back(lookup);
-    }
-
-
-    HS = new clang::HeaderSearch(HeaderSearchOptions, SourceManager,
-       DiagnosticsEngine, LangOpts, &TargetInfo);
-    //HS->SetSearchPaths(Dirs, 0, 0, true);
-    debug() << "******** HeaderSearch is initialized ********" << std::endl;
+    //Tool.appendArgumentsAdjuster("
 }
 */
 
@@ -140,7 +96,6 @@ std::string welcome() {
     std::string welcome = "Hello world> ";
     return welcome;
 }
-
 
 int main(int argc, const char **argv) {
     llvm::sys::PrintStackTraceOnErrorSignal(argv[0]);
@@ -152,22 +107,27 @@ int main(int argc, const char **argv) {
 
     // Have to parse command line arguments
     // And add help... and so forth.
-    clang::tooling::CommonOptionsParser option(argc, argv, CcliCategory, CcliUsage);
+    //clang::tooling::CommonOptionsParser option(argc, argv, CcliCategory, CcliUsage);
 
     clang::CompilerInstance CI(std::make_shared<clang::PCHContainerOperations>());
-    std::unique_ptr<clang::HeaderSearch> HS;
+
+    clang::tooling::CommonOptionsParser ToolOptions(argc, argv, CcliCategory);
+    ccli::CcliTool Tool(ToolOptions.getCompilations(),
+                        ToolOptions.getSourcePathList());
 
 
     Init_CI(CI);
-    //Init_HS(CI, HS.get());
+    //Init_CcliTool(Tool);
 
 
-    ccli::CcliTool Tool(CI, *(HS.get()));
+
+
     ccli::GlobalContext GlobalContext;
 
     // Frontend Actions that will be processed
     // With CcliTool.
-    std::unique_ptr<ccli::DeclFindingAction> FindingAct(new ccli::DeclFindingAction);
+    std::unique_ptr<clang::tooling::FrontendActionFactory> FindingAct =
+            clang::tooling::newFrontendActionFactory<ccli::DeclFindingAction>();
     std::unique_ptr<clang::ento::AnalysisAction> AnalysisAct(new clang::ento::AnalysisAction);
     std::unique_ptr<clang::SyntaxOnlyAction> SyntaxOnlyAct(new clang::SyntaxOnlyAction);
 
@@ -195,10 +155,9 @@ int main(int argc, const char **argv) {
         std::string context_string = GlobalContext.get_context();
 
 
-        Tool.run(SyntaxOnlyAct.get(), context_string);
-        //Tool.run(FindingAct.get(), context_string);
-
-        //Tool.run(Analysis_Act, compiled_str);
+        //Tool.run(SyntaxOnlyAct.get(), context_string);
+        Tool.run(std::move(FindingAct), context_string);
+        //Tool.run(Analysis_Act, context_string);
 
 
         std::string result = exec_expr(cmd);
