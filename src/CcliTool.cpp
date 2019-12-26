@@ -1,25 +1,29 @@
 #include "clang/Tooling/Tooling.h"
 
-#include "ccli/Logger.hpp"
 #include "ccli/CcliTool.hpp"
+#include "ccli/Logger.hpp"
 
 
 namespace ccli {
 
 
-bool CcliTool::run(std::unique_ptr<clang::tooling::FrontendActionFactory> ToolAction, std::string &cmd) {
-    mapVirtualFile("ccli.cpp", "#include <string>");
+bool CcliTool::execute(clang::FrontendAction *ToolAction, const std::string &cmd) {
+/*
+    //mapVirtualFile("ccli.cpp", cmd);
 
-    clang::tooling::ArgumentsAdjuster adj = clang::tooling::getClangSyntaxOnlyAdjuster();
+    clearArgumentsAdjusters();
+    appendArgumentsAdjuster(clang::tooling::getClangStripOutputAdjuster());
+    appendArgumentsAdjuster(clang::tooling::getClangStripDependencyFileAdjuster());
 
-    llvm::ArrayRef<std::pair<std::unique_ptr<clang::tooling::FrontendActionFactory>, clang::tooling::ArgumentsAdjuster>> args;
-    std::pair<std::unique_ptr<clang::tooling::FrontendActionFactory>, clang::tooling::ArgumentsAdjuster> pr = std::make_pair(ToolAction, adj);
+    //appendArgumentsAdjuster("-I/usr/include/c++
 
+    bool res = run(ToolAction);
 
-    llvm::Error res = execute(args);
+*/
+    bool res = clang::tooling::runToolOnCode(ToolAction, cmd);
 
-    
-    return (res)? 1: 0;
+    if(res) 
+        debug() << "No errors in AST" << std::endl;
+    return res;
 }
-
 } // namespace

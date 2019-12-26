@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <type_traits>
 
 #include "ccli/Logger.hpp"
 
@@ -42,4 +43,12 @@ A map(T func, A &&vec) {
     std::transform(vec.begin(), vec.end(), vec.begin(), func);
     return vec;
 }
+
+/*
+template<typename T>
+T new_ptr(T act) {
+    T res(new typename std::remove_reference<decltype(*(act.get()))>::type());
+    return res;
+}
+*/
 #endif

@@ -1,5 +1,5 @@
-#ifndef DECLFINDINGACTION_CPP
-#define DECLFINDINGACTION_CPP
+#ifndef DUMPASTACTION_CPP
+#define DUMPASTACTION_CPP
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/AST/ASTContext.h"
@@ -7,11 +7,9 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Basic/SourceManager.h"
 
-#include <string>
-
 namespace ccli {
 
-class DeclFindingAction: public clang::ASTFrontendAction {
+class DumpASTAction : public clang::ASTFrontendAction {
 public:
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
                                     clang::CompilerInstance &CI,
@@ -19,19 +17,22 @@ public:
 };
 
 
-class DeclVisitor: public clang::RecursiveASTVisitor<DeclVisitor> {
+class ASTVisitor: public clang::RecursiveASTVisitor<ASTVisitor> {
     clang::SourceManager &SourceManager;
 public:
-    DeclVisitor(clang::SourceManager &SourceManager): SourceManager(SourceManager) {}
-    bool VisitFunctionDecl(clang::FunctionDecl *Decl);
+    ASTVisitor(clang::SourceManager &SourceManager): SourceManager(SourceManager) {}
+    bool VisitDecl(clang::Decl *Decl);
+    //bool VisitStmt(clang::Stmt *Stmt);
+    //bool VisitQualType(clang::QualType *Type);
 };
 
 
-class DeclFinder: public clang::ASTConsumer {
-    DeclVisitor Visitor;
+class DumpConsumer: public clang::ASTConsumer {
+    ASTVisitor Visitor;
 public:
-    DeclFinder(clang::SourceManager &SM): Visitor(SM) {}
+    DumpConsumer(clang::SourceManager &SM): Visitor(SM) {}
     void HandleTranslationUnit(clang::ASTContext &Context) final;
 };
 }
 #endif
+

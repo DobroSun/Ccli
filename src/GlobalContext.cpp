@@ -16,14 +16,16 @@ GlobalContext::GlobalContext() {
             "}",
             };
     _include = {
-            "#include <vector>",
+            "#include <iostream>",
+            "#include <string>",
             };
     filename = "ccli.cpp";
 }
 
 void GlobalContext::add_command(std::string cmd) {
     // Has to be in 'State' pattern.
-    main_commands.push_back(cmd);
+    //main_commands.push_back(cmd);
+    decl_commands.push_back(cmd);
 }
 
 // Pushes all commands to string,

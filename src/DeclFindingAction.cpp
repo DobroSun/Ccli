@@ -1,11 +1,10 @@
 #include "ccli/DeclFindingAction.hpp"
+#include "ccli/Logger.hpp"
 
-#include "clang/Tooling/Tooling.h"
-#include <iostream>
 
 namespace ccli {
 
-// DeclFindingAction
+// clang::ASTFrontendAction.
 std::unique_ptr<clang::ASTConsumer> DeclFindingAction::CreateASTConsumer(
                                 clang::CompilerInstance &CI,
                                 clang::StringRef) {
@@ -13,7 +12,7 @@ std::unique_ptr<clang::ASTConsumer> DeclFindingAction::CreateASTConsumer(
 }
 
 
-// DeclFinder
+// clang::ASTConsumer.
 void DeclFinder::HandleTranslationUnit(clang::ASTContext &Context) {
     clang::SourceManager *SourceManager = &Context.getSourceManager();
     auto Decls = Context.getTranslationUnitDecl()->decls();
@@ -22,14 +21,14 @@ void DeclFinder::HandleTranslationUnit(clang::ASTContext &Context) {
         if(FileID != SourceManager->getMainFileID()) continue;
         Visitor.TraverseDecl(Decl);
     }
+
 }
 
 
-// DeclVisitor
-bool DeclVisitor::VisitDecl(clang::Decl *Decl) {
-    Decl->dump();
+// clang::RecursiveASTVisitor.
+bool DeclVisitor::VisitFunctionDecl(clang::FunctionDecl *Decl) {
+    debug() << "Visiting FunctionDecl" << std::endl;
     return true;
 }
-
 } // namspace
 

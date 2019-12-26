@@ -7,6 +7,7 @@ add_library(
         GlobalContext.cpp
         Utility.cpp
         DeclFindingAction.cpp
+        DumpASTAction.cpp
         HeaderSearch.cpp
 )
 

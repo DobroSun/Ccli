@@ -14,6 +14,7 @@
 #include "ccli/exec_expr.hpp"
 #include "ccli/Utility.hpp"
 #include "ccli/DeclFindingAction.hpp"
+#include "ccli/DumpASTAction.hpp"
 #include "ccli/Logger.hpp"
 #include "ccli/HeaderSearch.hpp"
 
@@ -126,8 +127,8 @@ int main(int argc, const char **argv) {
 
     // Frontend Actions that will be processed
     // With CcliTool.
-    std::unique_ptr<clang::tooling::FrontendActionFactory> FindingAct =
-            clang::tooling::newFrontendActionFactory<ccli::DeclFindingAction>();
+    std::unique_ptr<ccli::DeclFindingAction> FindAct(new ccli::DeclFindingAction);
+    std::unique_ptr<ccli::DumpASTAction> DumpAct(new ccli::DumpASTAction);
     std::unique_ptr<clang::ento::AnalysisAction> AnalysisAct(new clang::ento::AnalysisAction);
     std::unique_ptr<clang::SyntaxOnlyAction> SyntaxOnlyAct(new clang::SyntaxOnlyAction);
 
@@ -143,21 +144,34 @@ int main(int argc, const char **argv) {
     sigaction(SIGINT, &act, NULL);
     rl_bind_key('\t', rl_insert);
 
-    while (1) {
+    while(1) {
         const char *cmd = readline(welcome().c_str());
 
         // Handles C-d and whitespace
-        if (cmd == NULL) {std::cout << "\n"; exit(0);}
-        if (!std::strcmp(cmd, "")) continue;
+        if(cmd == NULL) {std::cout << "\n"; exit(0);}
+        if(!std::strcmp(cmd, "")) continue;
 
         add_history(cmd);
+
+
         GlobalContext.add_command(cmd);
         std::string context_string = GlobalContext.get_context();
+        debug() << context_string << " <- context_string" << std::endl;
 
 
-        //Tool.run(SyntaxOnlyAct.get(), context_string);
-        Tool.run(std::move(FindingAct), context_string);
-        //Tool.run(Analysis_Act, context_string);
+        // TODO:
+        // Make deep copies of Actions and pass them to function.
+        //Tool.execute(new clang::SyntaxOnlyAction, context_string);
+        //Tool.execute(new clang::ento::AnalysisAction, context_string);
+
+#ifdef DEBUG
+        Tool.execute(new ccli::DumpASTAction, context_string);
+#endif
+        //Tool.execute(new ccli::DeclFindingAction, cmd);
+
+        //Tool.execute(SyntaxOnlyAct.get(), context_string);
+        //Tool.execute(FindAct.get(), context_string);
+        //Tool.execute(Analysis_Act, context_string);
 
 
         std::string result = exec_expr(cmd);

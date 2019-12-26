@@ -1,5 +1,7 @@
 #ifndef UTILITY_CPP
 #define UTILITY_CPP
+#include "clang/Frontend/FrontendAction.h"
+
 #include <vector>
 #include <string>
 
@@ -22,6 +24,11 @@ std::string trim(std::string &str);
 
 std::string add_I_option(const std::string &dest);
 std::string add_I_option(std::string &&dest);
+
+/*
+template<typename T>
+T new_ptr(T act);
+*/
 
 template<typename T, typename A>
 A map(T func, const A &vec);
