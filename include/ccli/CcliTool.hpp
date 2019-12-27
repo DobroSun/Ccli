@@ -10,13 +10,18 @@
 
 namespace ccli {
 
+enum ExecutionState {
+    Default,
+    Silent,
+};
+
 class CcliTool: public clang::tooling::ClangTool {
     const std::string filename;
 public:
     CcliTool(clang::tooling::CompilationDatabase &Compilations, 
              llvm::ArrayRef<std::string> SourcePath)
     : clang::tooling::ClangTool(Compilations, SourcePath) {}
-    bool execute(clang::FrontendAction *ToolAction, const std::string &code);
+    bool execute(clang::FrontendAction *ToolAction, const std::string &code, ccli::ExecutionState state=Default);
 };
 }
 #endif

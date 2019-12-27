@@ -13,7 +13,14 @@ std::unique_ptr<clang::ASTConsumer> DeclFindingAction::CreateASTConsumer(
 
 
 // clang::ASTConsumer.
+DeclFinder::DeclFinder(clang::SourceManager &SM): Visitor(SM) {
+}
+
 void DeclFinder::HandleTranslationUnit(clang::ASTContext &Context) {
+    // No need in searching for MainFile Decls.
+    // This Action is supposed to be running over current line of code.
+    // So just call Visitor.TraverseDecl(Decl);
+
     clang::SourceManager *SourceManager = &Context.getSourceManager();
     auto Decls = Context.getTranslationUnitDecl()->decls();
     for(auto &Decl: Decls) {
@@ -21,13 +28,19 @@ void DeclFinder::HandleTranslationUnit(clang::ASTContext &Context) {
         if(FileID != SourceManager->getMainFileID()) continue;
         Visitor.TraverseDecl(Decl);
     }
-
 }
 
 
 // clang::RecursiveASTVisitor.
+DeclVisitor::DeclVisitor(clang::SourceManager &SM): SourceManager(SM) {
+    NoDecls = true;
+}
+
+
 bool DeclVisitor::VisitFunctionDecl(clang::FunctionDecl *Decl) {
+    NoDecls = false;
     debug() << "Visiting FunctionDecl" << std::endl;
+    debug() << NoDecls << " <- NOdecls " << std::endl;
     return true;
 }
 } // namspace

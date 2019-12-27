@@ -17,6 +17,7 @@
 #include "ccli/DumpASTAction.hpp"
 #include "ccli/Logger.hpp"
 #include "ccli/HeaderSearch.hpp"
+#include "ccli/FindActionAdjuster.hpp"
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -98,7 +99,16 @@ std::string welcome() {
     return welcome;
 }
 
+int add(int a, double b, std::string s) {
+    return a + b;
+}
+
+
 int main(int argc, const char **argv) {
+    auto f = make_decorator(silent, add)(1, 3.0, "loo");
+    //std::cout << f() << std::endl;
+    std::cout << f << std::endl;
+
     llvm::sys::PrintStackTraceOnErrorSignal(argv[0]);
 
     llvm::InitializeAllTargets();
@@ -124,6 +134,7 @@ int main(int argc, const char **argv) {
 
 
     ccli::GlobalContext GlobalContext;
+    ccli::FindActionAdjuster FindActionAdjuster;
 
     // Frontend Actions that will be processed
     // With CcliTool.
@@ -159,15 +170,17 @@ int main(int argc, const char **argv) {
         debug() << context_string << " <- context_string" << std::endl;
 
 
-        // TODO:
+        // FIXME:
         // Make deep copies of Actions and pass them to function.
         //Tool.execute(new clang::SyntaxOnlyAction, context_string);
         //Tool.execute(new clang::ento::AnalysisAction, context_string);
-
 #ifdef DEBUG
         Tool.execute(new ccli::DumpASTAction, context_string);
 #endif
-        //Tool.execute(new ccli::DeclFindingAction, cmd);
+        Tool.execute(new ccli::DeclFindingAction, cmd, ccli::Silent);
+
+
+
 
         //Tool.execute(SyntaxOnlyAct.get(), context_string);
         //Tool.execute(FindAct.get(), context_string);

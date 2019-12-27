@@ -5,6 +5,10 @@
 #include <vector>
 #include <string>
 
+#define make_decorator(decorator, func) \
+    decorator<decltype(func)>(func)
+
+
 std::string join(const std::vector<std::string> &context, char ch='\n');
 std::string join(std::vector<std::string> &&context, char ch='\n');
 
@@ -25,10 +29,14 @@ std::string trim(std::string &str);
 std::string add_I_option(const std::string &dest);
 std::string add_I_option(std::string &&dest);
 
-/*
+
 template<typename T>
-T new_ptr(T act);
-*/
+auto silent(T func);
+
+template<typename T>
+auto get_output(T func);
+
+
 
 template<typename T, typename A>
 A map(T func, const A &vec);

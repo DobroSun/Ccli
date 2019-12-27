@@ -6,7 +6,11 @@
 #include <algorithm>
 #include <type_traits>
 
+#include <unistd.h>
+
+
 #include "ccli/Logger.hpp"
+
 
 // Prints all items from given collection.
 template<typename T>
@@ -44,11 +48,64 @@ A map(T func, A &&vec) {
     return vec;
 }
 
-/*
+
+// Executes given function silently.
+
+// FIXME:
+// Cannot handle function with default arguments.
+// Requires complete argument list.
 template<typename T>
-T new_ptr(T act) {
-    T res(new typename std::remove_reference<decltype(*(act.get()))>::type());
-    return res;
+auto silent(T func) {
+    auto r_func = [=](auto ...args) {
+        int out_pipe[2];
+        int saved_stdout;
+
+        saved_stdout = dup(STDOUT_FILENO);
+        if(pipe(out_pipe) != 0) {
+            std::cout << "Cannot open pipe in decorator!" << std::endl;
+            exit(1);
+        }
+
+        dup2(out_pipe[1], STDOUT_FILENO);
+        auto res = func(args...);
+
+        close(out_pipe[1]);
+        dup2(saved_stdout, STDOUT_FILENO);
+        return res;
+    };
+    return r_func;
 }
-*/
+
+
+// Executes given function,
+// Returns all output send to stdout
+// While processing function.
+template<typename T>
+auto get_output(T func) {
+    auto r_func = [=](auto... args) {
+        std::array<char, 128> buffer;
+        int out_pipe[2];
+        int saved_stdout;
+
+        saved_stdout = dup(STDOUT_FILENO);
+        if(pipe(out_pipe) != 0) {
+            std::cout << "Cannot open pipe in decorator!" << std::endl;
+            exit(1);
+        }
+
+        dup2(out_pipe[1], STDOUT_FILENO);
+        func(args...);
+
+        fflush(stdout);
+        close(out_pipe[1]);
+        dup2(saved_stdout, STDOUT_FILENO);
+
+        std::string output;
+        while(read(out_pipe[0], buffer.data(), buffer.size()) != 0) {
+            output += buffer.data();
+        }
+        return output;
+    };
+    return r_func;
+}
 #endif

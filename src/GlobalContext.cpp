@@ -24,7 +24,6 @@ GlobalContext::GlobalContext() {
 
 void GlobalContext::add_command(std::string cmd) {
     // Has to be in 'State' pattern.
-    //main_commands.push_back(cmd);
     decl_commands.push_back(cmd);
 }
 
