@@ -8,7 +8,7 @@
 namespace ccli {
 
 
-bool CcliTool::execute(clang::FrontendAction *ToolAction, const std::string &cmd, ccli::ExecutionState state) {
+bool CcliTool::execute(clang::FrontendAction *ToolAction, const std::string &cmd, ccli::ToolState state) {
 /*
     //mapVirtualFile("ccli.cpp", cmd);
 
@@ -23,7 +23,7 @@ bool CcliTool::execute(clang::FrontendAction *ToolAction, const std::string &cmd
 */
 
     bool res;
-    if(state == Silent) {
+    if(state == ToolState::Silent) {
         res = make_decorator(silent,
                     clang::tooling::runToolOnCode)(
                             ToolAction,

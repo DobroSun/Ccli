@@ -209,17 +209,16 @@ TEST(MapCase, map) {
     std::vector<int> res1 = map([](int &n){ return ++n;}, cmd1);
     std::vector<double> res2 = map(dob, cmd2);
     std::vector<std::string> res3 = map(oh, cmd3);
+    std::vector<std::string> res4 = map(oh, std::vector<std::string>({"l", "foo", "bar"}));
 
     std::vector<int> expected1 = {2, 3, 4, 5};
     std::vector<double> expected2 = {1, 4, 9, 16};
     std::vector<std::string> expected3 = {"l!", "foo!", "bar!"};
+    std::vector<std::string> expected4 = {"l!", "foo!", "bar!"};
 
 
     ASSERT_EQ(res1, expected1);
     ASSERT_EQ(res2, expected2);
     ASSERT_EQ(res3, expected3);
+    ASSERT_EQ(res4, expected4);
 }
-
-
-
-

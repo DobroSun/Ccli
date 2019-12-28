@@ -172,12 +172,12 @@ int main(int argc, const char **argv) {
 
         // FIXME:
         // Make deep copies of Actions and pass them to function.
-        //Tool.execute(new clang::SyntaxOnlyAction, context_string);
         //Tool.execute(new clang::ento::AnalysisAction, context_string);
 #ifdef DEBUG
         Tool.execute(new ccli::DumpASTAction, context_string);
 #endif
-        Tool.execute(new ccli::DeclFindingAction, cmd, ccli::Silent);
+        //Tool.execute(new ccli::DeclFindingAction, cmd, ccli::ToolState::Silent);
+        //Tool.execute(new clang::SyntaxOnlyAction, context_string);
 
 
 

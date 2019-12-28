@@ -17,31 +17,25 @@ template<typename T>
 void print(const std::vector<T> &vec) {
     debug() << "[";
     for(unsigned int i = 0; i < vec.size(); i++) {
-        if((vec.size() - i) > 1)
-            debug() << vec[i] << ", ";
-        else
-            debug() << vec[i];
-    }
-    debug() << "]\n";
-}
-template<typename T>
-void print(std::vector<T> &&vec) {
-    debug() << "[";
-    for(unsigned int i = 0; i < vec.size(); i++) {
-        if((vec.size() - i) > 1)
-            debug() << vec[i] << ", ";
-        else
-            debug() << vec[i];
+        bool pr = false;
+        bool cm = false;
+        if constexpr (std::is_same<T, std::string>::value ||
+                      std::is_same<T, const char*>::value) {
+            debug() << "\"";
+            pr = true;
+        }
+        if((vec.size() - i) > 1) {
+            cm = true;
+        }
+        debug() << vec[i];
+        if(pr) debug() << "\"";
+        if(cm) debug() << ", ";
     }
     debug() << "]\n";
 }
 
+
 // Runs given function over a container.
-template<typename T, typename A>
-A map(T func, const A &vec) {
-    std::transform(vec.begin(), vec.end(), vec.begin(), func);
-    return vec;
-}
 template<typename T, typename A>
 A map(T func, A &&vec) {
     std::transform(vec.begin(), vec.end(), vec.begin(), func);
@@ -58,19 +52,22 @@ template<typename T>
 auto silent(T func) {
     auto r_func = [=](auto ...args) {
         int out_pipe[2];
-        int saved_stdout;
+        int saved_stdout, saved_stderr;
 
         saved_stdout = dup(STDOUT_FILENO);
+        saved_stderr = dup(STDERR_FILENO);
         if(pipe(out_pipe) != 0) {
             std::cout << "Cannot open pipe in decorator!" << std::endl;
             exit(1);
         }
 
         dup2(out_pipe[1], STDOUT_FILENO);
+        dup2(out_pipe[1], STDERR_FILENO);
         auto res = func(args...);
 
         close(out_pipe[1]);
         dup2(saved_stdout, STDOUT_FILENO);
+        dup2(saved_stderr, STDERR_FILENO);
         return res;
     };
     return r_func;
@@ -80,6 +77,8 @@ auto silent(T func) {
 // Executes given function,
 // Returns all output send to stdout
 // While processing function.
+
+// Is not working.
 template<typename T>
 auto get_output(T func) {
     auto r_func = [=](auto... args) {
