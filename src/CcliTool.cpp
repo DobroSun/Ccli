@@ -8,32 +8,32 @@
 namespace ccli {
 
 
+CcliTool::CcliTool(clang::tooling::CompilationDatabase &Compilations,
+                   llvm::ArrayRef<std::string> SourcePath)
+                   : clang::tooling::ClangTool(Compilations, SourcePath) {
+    filename = "ccli.cpp";
+}
 bool CcliTool::execute(clang::FrontendAction *ToolAction, const std::string &cmd, ccli::ToolState state) {
-/*
-    //mapVirtualFile("ccli.cpp", cmd);
-
-    clearArgumentsAdjusters();
-    appendArgumentsAdjuster(clang::tooling::getClangStripOutputAdjuster());
-    appendArgumentsAdjuster(clang::tooling::getClangStripDependencyFileAdjuster());
-
-    //appendArgumentsAdjuster("-I/usr/include/c++
-
-    bool res = run(ToolAction);
-
-*/
-
     bool res;
     if(state == ToolState::Silent) {
         res = make_decorator(silent,
                     clang::tooling::runToolOnCode)(
                             ToolAction,
                             cmd,
-                            "ccli.cpp",
+                            filename,
                             std::make_shared<clang::PCHContainerOperations>()
                             );
-    }
-    else
+    } else if(state == ToolState::NoErrs) {
+        res = make_decorator(no_errors,
+                    clang::tooling::runToolOnCode)(
+                            ToolAction,
+                            cmd,
+                            filename,
+                            std::make_shared<clang::PCHContainerOperations>()
+                            );
+    } else {
         res = clang::tooling::runToolOnCode(ToolAction, cmd);
+    }
     return res;
 }
 } // namespace

@@ -5,9 +5,11 @@
 namespace ccli {
 
 
-class FindActionAdjuster {
+class ToolAdjuster {
 public:
-    FindActionAdjuster();
+    bool NoDecls;
+
+    ToolAdjuster();
     bool collect();
 };
 

@@ -73,12 +73,34 @@ auto silent(T func) {
     return r_func;
 }
 
+template<typename T>
+auto no_errors(T func) {
+    auto r_func = [=](auto ...args) {
+        int out_pipe[2];
+        int saved_stderr;
+
+        saved_stderr = dup(STDERR_FILENO);
+        if(pipe(out_pipe) != 0) {
+            std::cout << "Cannot open pipe in decorator!" << std::endl;
+            exit(1);
+        }
+
+        dup2(out_pipe[1], STDERR_FILENO);
+        auto res = func(args...);
+
+        close(out_pipe[1]);
+        dup2(saved_stderr, STDERR_FILENO);
+        return res;
+    };
+    return r_func;
+}
 
 // Executes given function,
 // Returns all output send to stdout
 // While processing function.
 
-// Is not working.
+// Does not work as expected.
+// Returns needed string with ovehead.
 template<typename T>
 auto get_output(T func) {
     auto r_func = [=](auto... args) {

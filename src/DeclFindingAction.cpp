@@ -3,44 +3,40 @@
 
 
 namespace ccli {
+class DeclFinder;
+
 
 // clang::ASTFrontendAction.
+DeclFindingAction::DeclFindingAction(StateScope &Scope_) {
+    Scope = Scope_;
+}
+
+
 std::unique_ptr<clang::ASTConsumer> DeclFindingAction::CreateASTConsumer(
                                 clang::CompilerInstance &CI,
                                 clang::StringRef) {
-    return std::unique_ptr<clang::ASTConsumer>(new DeclFinder(CI.getSourceManager()));
+    return std::unique_ptr<clang::ASTConsumer>(new DeclFinder(CI.getSourceManager(), Scope));
 }
 
 
 // clang::ASTConsumer.
-DeclFinder::DeclFinder(clang::SourceManager &SM): Visitor(SM) {
+DeclFinder::DeclFinder(clang::SourceManager &SM, StateScope &Scope_): Visitor(SM, Scope_) {
+    Scope = Scope_;
 }
 
 void DeclFinder::HandleTranslationUnit(clang::ASTContext &Context) {
-    // No need in searching for MainFile Decls.
-    // This Action is supposed to be running over current line of code.
-    // So just call Visitor.TraverseDecl(Decl);
-
-    clang::SourceManager *SourceManager = &Context.getSourceManager();
-    auto Decls = Context.getTranslationUnitDecl()->decls();
-    for(auto &Decl: Decls) {
-        const auto& FileID = SourceManager->getFileID(Decl->getLocation());
-        if(FileID != SourceManager->getMainFileID()) continue;
-        Visitor.TraverseDecl(Decl);
-    }
+    Visitor.TraverseAST(Context);
 }
 
 
 // clang::RecursiveASTVisitor.
-DeclVisitor::DeclVisitor(clang::SourceManager &SM): SourceManager(SM) {
-    NoDecls = true;
+DeclVisitor::DeclVisitor(clang::SourceManager &SM, StateScope &Scope_): SourceManager(SM) {
+    Scope = Scope_;
 }
 
-
 bool DeclVisitor::VisitFunctionDecl(clang::FunctionDecl *Decl) {
-    NoDecls = false;
-    debug() << "Visiting FunctionDecl" << std::endl;
-    debug() << NoDecls << " <- NOdecls " << std::endl;
+    Scope.is_decl = true;
+    debug() << "Changed state of 'Decls'" << std::endl;
     return true;
 }
 } // namspace

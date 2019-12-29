@@ -29,6 +29,9 @@ template<typename T>
 auto silent(T func);
 
 template<typename T>
+auto no_errors(T func);
+
+template<typename T>
 auto get_output(T func);
 
 

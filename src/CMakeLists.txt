@@ -9,7 +9,7 @@ add_library(
         DeclFindingAction.cpp
         DumpASTAction.cpp
         HeaderSearch.cpp
-        FindActionAdjuster.cpp
+        StateManager.cpp
 )
 
 target_include_directories(ccli PUBLIC "${LLVM_INCLUDE_DIR}")
