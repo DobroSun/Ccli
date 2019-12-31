@@ -15,9 +15,9 @@ namespace ccli {
 
 
 class DeclFindingAction: public clang::ASTFrontendAction {
-    StateScope Scope;
+    StateScope *Scope;
 public:
-    DeclFindingAction(StateScope &Scope_);
+    DeclFindingAction(StateScope *Scope_);
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
                                     clang::CompilerInstance &CI,
                                     clang::StringRef) final;
@@ -26,18 +26,19 @@ public:
 
 class DeclVisitor: public clang::RecursiveASTVisitor<DeclVisitor> {
     clang::SourceManager &SourceManager;
-    StateScope Scope;
+    StateScope *Scope;
 public:
-    DeclVisitor(clang::SourceManager &SM, StateScope &Scope);
+    DeclVisitor(clang::SourceManager &SM, StateScope *Scope);
     bool VisitFunctionDecl(clang::FunctionDecl *Decl);
+    bool VisitVarDecl(clang::VarDecl *Decl);
 };
 
 
 class DeclFinder: public clang::ASTConsumer {
-    StateScope Scope;
+    StateScope *Scope;
     DeclVisitor Visitor;
 public:
-    DeclFinder(clang::SourceManager &SM, StateScope &Scope_);
+    DeclFinder(clang::SourceManager &SM, StateScope *Scope_);
     void HandleTranslationUnit(clang::ASTContext &Context) final;
 };
 

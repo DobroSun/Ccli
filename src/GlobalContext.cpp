@@ -3,13 +3,16 @@
 
 namespace ccli {
 
-
+MainCmd::MainCmd() {
+}
 void MainCmd::add_command(GlobalContext *cnt, std::string cmd) {
     debug() << " -> Pushing to mains" << std::endl;
     cnt->get_mainc().push_back(cmd);
 }
 
 
+DeclCmd::DeclCmd() {
+}
 void DeclCmd::add_command(GlobalContext *cnt, std::string cmd) {
     debug() << " -> Pushing to decls" << std::endl;
     cnt->get_declc().push_back(cmd);
@@ -18,6 +21,9 @@ void DeclCmd::add_command(GlobalContext *cnt, std::string cmd) {
 
 
 GlobalContext::GlobalContext() {
+    agent = new DeclCmd();
+
+
     main_commands = {""};
     decl_commands = {""};
 
@@ -35,6 +41,11 @@ GlobalContext::GlobalContext() {
     filename = "ccli.cpp";
 }
 
+GlobalContext::~GlobalContext() {
+    delete agent;
+}
+
+
 std::vector<std::string> &GlobalContext::get_mainc() {
     return main_commands;
 }
@@ -47,8 +58,16 @@ void GlobalContext::add_command(std::string cmd) {
     agent->add_command(this, cmd);
 }
 
-void GlobalContext::setState(ContextState *state) {
-    agent = state;
+void GlobalContext::setMainState() {
+    delete agent;
+    debug() << "Changing ContextState" << std::endl;
+    agent = new MainCmd();
+}
+
+void GlobalContext::setDeclState() {
+    delete agent;
+    debug() << "Changing ContextState" << std::endl;
+    agent = new DeclCmd();
 }
 
 // Pushes all commands to string,

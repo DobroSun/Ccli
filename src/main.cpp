@@ -48,15 +48,7 @@ void collect_headers() {
     debug() << "********* Headers collected *********" << std::endl;
 }
 */
-/*
-void Init_CcliTool(ccli::CcliTool &Tool) {
-    Tool.clearArgumentsAdjusters();
-    Tool.appendArgumentsAdjuster(clang::tooling::getClangStripOutputAdjuster());
-    Tool.appendArgumentsAdjuster(clang::tooling::getClangStripDependencyFileAdjuster());
 
-    //Tool.appendArgumentsAdjuster("
-}
-*/
 
 std::string welcome() {
     std::string welcome = "Hello world> ";
@@ -94,7 +86,7 @@ int main(int argc, const char **argv) {
     //std::unique_ptr<ccli::DeclFindingAction> FindAct(new ccli::DeclFindingAction);
     std::unique_ptr<ccli::DumpASTAction> DumpAct(new ccli::DumpASTAction);
     std::unique_ptr<clang::ento::AnalysisAction> AnalysisAct(new clang::ento::AnalysisAction);
-    std::unique_ptr<clang::SyntaxOnlyAction> SyntaxOnlyAct(new clang::SyntaxOnlyAction);
+    std::shared_ptr<clang::SyntaxOnlyAction> SyntaxOnlyAct(new clang::SyntaxOnlyAction);
 
 
     // Handles Ctrl-C interruption
@@ -117,35 +109,37 @@ int main(int argc, const char **argv) {
 
         add_history(cmd);
 
+        // FIXME:
+        // Make deep copies of Actions and pass them to function.
+        //Tool.execute(FindAct .get(), context_string);
+        //Tool.execute(AnalysisAct.get(), context_string);
+        //Tool.execute(SyntaxOnlyAct.get(), "int a;");
 
+
+        //Tool.execute(new clang::SyntaxOnlyAction, "int a;");
+        //Tool.execute(new clang::ento::AnalysisAction, context_string);
+        //Tool.execute(new ccli::DeclFindingAction(&Scope), cmd, ccli::ToolState::NoErrs);
+
+
+
+        // TODO:
+        // Make adding commands logic!!!
         StateManager.change_state(Scope);
-        debug() << Scope.is_decl << std::endl;
-        debug() << Scope.is_main << std::endl;
-
         GlobalContext.add_command(cmd);
+
         std::string context_string = GlobalContext.get_context();
         debug() << context_string << " <- context_string" << std::endl;
 
 
-
-
-        // FIXME:
-        // Make deep copies of Actions and pass them to function.
-        //Tool.execute(SyntaxOnlyAct.get(), context_string);
-        //Tool.execute(indAc .get(), context_string);
-        //Tool.execute(AnalysisAct.get(), context_string);
-
-
 #ifdef DEBUG
-        //Tool.execute(new ccli::DumpASTAction, context_string);
+        Tool.execute(new ccli::DumpASTAction, context_string);
 #endif
-        //Tool.execute(new clang::SyntaxOnlyAction, context_string);
-        Tool.execute(new ccli::DeclFindingAction(Scope), cmd);
-        //Tool.execute(new clang::ento::AnalysisAction, context_string);
 
 
-        debug() << Scope.is_decl << std::endl;
-        debug() << Scope.is_main << std::endl;
+
+
+
+
 
 
         std::string result = exec_expr(cmd);

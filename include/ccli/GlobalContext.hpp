@@ -12,19 +12,22 @@ class GlobalContext;
 
 class ContextState {
 public:
-    virtual void add_command(GlobalContext *cnt, std::string cmd) = 0; //{
-        //debug() << " -> Pushing by default" << std::endl;
-    //}
+    virtual ~ContextState() {}
+    virtual void add_command(GlobalContext *cnt, std::string cmd) {
+        debug() << " -> Pushing by default" << std::endl;
+    }
 };
 
 class MainCmd: public ContextState {
 public:
+    MainCmd();
     ~MainCmd() {}
     void add_command(GlobalContext *cnt, std::string cmd) override;
 };
 
 class DeclCmd: public ContextState {
 public:
+    DeclCmd();
     ~DeclCmd() {}
     void add_command(GlobalContext *cnt, std::string cmd) override;
 };
@@ -43,10 +46,12 @@ class GlobalContext {
     std::vector<std::string> _include;
 public:
     GlobalContext();
+    ~GlobalContext();
     std::vector<std::string> &get_mainc();
     std::vector<std::string> &get_declc();
 
-    void setState(ContextState *state);
+    void setMainState();
+    void setDeclState();
     void add_command(std::string cmd);
     std::string get_context();
 };
