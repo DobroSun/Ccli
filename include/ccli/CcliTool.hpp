@@ -20,8 +20,12 @@ enum class ToolState {
 
 class CcliTool: public clang::tooling::ClangTool {
     std::string filename;
+    std::string toolname;
+
+    std::vector<std::string> args;
+    std::vector<std::pair<std::string, std::string>> mapping;
 public:
-    CcliTool(clang::tooling::CompilationDatabase &Compilations, 
+    CcliTool(clang::tooling::CompilationDatabase &Compilations,
              llvm::ArrayRef<std::string> SourcePath);
     StateScope Scope;
 
