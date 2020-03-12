@@ -1,7 +1,5 @@
 #ifndef UTILITY_CPP
 #define UTILITY_CPP
-#include "clang/Frontend/FrontendAction.h"
-
 #include <vector>
 #include <string>
 
@@ -20,9 +18,6 @@ std::vector<std::string> get_splitted_exec(const std::string &cmd, char ch='\n')
 std::string ltrim(std::string &str);
 std::string rtrim(std::string &str);
 std::string trim(std::string &str);
-
-
-std::string add_I_option(const std::string &dest);
 
 
 template<typename T>

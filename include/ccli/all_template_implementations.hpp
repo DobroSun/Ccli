@@ -1,15 +1,15 @@
 #ifndef ALL_TEMPLATE_IMPLEMENTATIONS
 #define ALL_TEMPLATE_IMPLEMENTATIONS
-
-#include <vector>
-#include <iostream>
-#include <algorithm>
 #include <type_traits>
+#include <algorithm>
+#include <iostream>
+#include <array>
+#include <vector>
 
 #include <unistd.h>
 
 
-#include "ccli/Logger.hpp"
+#include "ccli/logger.hpp"
 
 
 // Prints all items from given collection.
