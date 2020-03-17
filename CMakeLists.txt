@@ -35,5 +35,5 @@ target_link_libraries(main ccli readline)
 message(STATUS "Build type is " ${CMAKE_BUILD_TYPE})
 
 if(BUILD_TESTING)
-    add_subdirectory(tests)
+    add_subdirectory(test)
 endif()

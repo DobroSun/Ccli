@@ -11,6 +11,8 @@
 
 #include "ccli/logger.hpp"
 
+namespace ccli {
+namespace utility {
 
 // Prints all items from given collection.
 template<typename T>
@@ -35,16 +37,7 @@ void print(const std::vector<T> &vec) {
 }
 
 
-// Runs given function over a container.
-template<typename T, typename A>
-A map(T func, A &&vec) {
-    std::transform(vec.begin(), vec.end(), vec.begin(), func);
-    return vec;
-}
-
-
 // Executes given function silently.
-
 // FIXME:
 // Cannot handle function with default arguments.
 // Requires complete argument list.
@@ -129,4 +122,87 @@ auto get_output(T func) {
     };
     return r_func;
 }
+
+template<class T, class = void>
+struct is_iterable: std::false_type {};
+
+template<class T>
+struct is_iterable
+  <T, std::void_t<typename T::iterator>>
+  : std::true_type {};
+
+template<class T>
+constexpr bool is_iterable_v = is_iterable<T>::value;
+
+
+template
+    <
+    class T, class = std::void_t<>, class = std::void_t<>
+    >
+struct is_mapping
+    : std::false_type {};
+
+template<class T>
+struct is_mapping
+    <T,
+     std::void_t<typename T::key_type>,
+     std::void_t<typename T::mapped_type>
+    >   
+    : std::true_type {};
+
+template<class T>
+constexpr bool is_mapping_v = is_mapping<T>::value;
+
+template<class T, class F, class = void>
+class map__;
+
+template<class T, class F>
+class map__<T, F, std::enable_if_t<is_iterable_v<T>>> {
+  void handle_maps(const T &m, F f, std::true_type) {
+    std::cout << "RUNNING ON MAP CONTAINER" << std::endl;
+    T &tmp = const_cast<T&>(m);
+    if constexpr(std::is_same<
+                  std::result_of_t
+                  <
+                    decltype((f))(std::add_lvalue_reference_t<typename T::value_type>)
+                  >,
+                  void
+                  >::value) {
+      std::cout << "Calling function returning void on map!" << std::endl;
+      std::for_each(tmp.begin(), tmp.end(), f);
+    } else  {
+      std::cout << "Calling function returning value on map!" << std::endl;
+      for(auto const &[key, value]: m) {
+        auto res = f(std::make_pair(key, value));
+        tmp[res.first] = res.second;
+      }
+    }
+  }
+  void handle_maps(const T &m, F f, std::false_type) {
+    T &tmp = const_cast<T&>(m);
+    if constexpr(std::is_same<
+                  std::result_of_t
+                  <
+                    decltype((f))(std::add_lvalue_reference_t<typename T::value_type>)
+                  >,
+                  void
+                  >::value) {
+      std::for_each(tmp.begin(), tmp.end(), f);
+    } else {
+      std::transform(m.begin(), m.end(), tmp.begin(), f);
+    }
+  }
+public:
+  void operator()(const T& m, F f) {
+    handle_maps(m, f, std::integral_constant<bool, is_mapping_v<T>>());
+  }
+};
+
+template<class T, class F>
+void map(T&& m, F f) {
+  map__<std::remove_reference_t<T>, F> M;
+  return M(std::forward<T>(m), f);
+}
+}; // namespace utility
+}; // namespace ccli
 #endif
