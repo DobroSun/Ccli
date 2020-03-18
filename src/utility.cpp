@@ -26,15 +26,16 @@ std::string join(const std::vector<std::string> &context, char ch) {
 // Executes specified bash command
 // In terminal and gives output in string.
 std::string exec(const std::string &cmd) {
+  std::string execute = cmd + " 2>&1";
 	std::array<char, 128> buffer;
 	std::string result;
-	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(execute.c_str(), "r"), pclose);
 	if(!pipe) {
-	std::cerr << "Processing popen failed!\n";
-	return "";
+    std::cerr << "Processing popen failed!\n";
+    return "";
 	}
 	while(fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-			result += buffer.data();
+    result += buffer.data();
 	}
 	return result;
 }
@@ -77,6 +78,9 @@ std::string trim(std::string &str) {
 }
 
 
+bool equals(const std::string &s1, const std::string &s2) {
+  return !s1.compare(s2);
+}
 bool ends_with(std::string &cmd, const std::string &ch) {
 	cmd = rtrim(cmd);
 	return (cmd.size() >= ch.size() &&  cmd.compare(cmd.size() - ch.size(), ch.size(), ch) == 0);
@@ -89,7 +93,6 @@ bool find(std::string &cmd, const std::string &ch) {
 	int a = cmd.find(ch);
 	return a != -1;
 }
-
 int find_place(std::string &cmd, const std::string &ch) {
 		int a = cmd.find(ch);
 		if (!find(cmd, ch)) a = cmd.size() + 1;

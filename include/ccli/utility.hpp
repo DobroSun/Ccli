@@ -18,7 +18,7 @@ std::vector<std::string> get_splitted_exec(const std::string &cmd, char ch='\n')
 std::string ltrim(std::string &str);
 std::string rtrim(std::string &str);
 std::string trim(std::string &str);
-
+bool equals(const std::string &s1, const std::string &s2);
 bool ends_with(std::string &cmd, const std::string &ch);
 bool starts_with(std::string &cmd, const std::string &ch);
 bool find(std::string &cmd, const std::string &ch);

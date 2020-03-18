@@ -4,6 +4,7 @@ add_library(
 	ccli STATIC
 		utility.cpp
     context.cpp
+    history.cpp
 )
 
 target_include_directories(

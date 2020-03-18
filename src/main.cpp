@@ -1,5 +1,6 @@
 #include "ccli/utility.hpp"
 #include "ccli/context.hpp"
+#include "ccli/history.hpp"
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -12,14 +13,16 @@
 #include <exception>
 #include <regex>
 #include <fstream>
+#include <cassert>
+
 
 
 using ccli::push_to;
 using namespace ccli::utility;
 
 
-std::string welcome(ccli::context &cc) {
-  auto includes = cc.get_includes();
+std::string welcome(ccli::context *cc) {
+  auto includes = cc->get_includes();
   if(includes.empty()) {
     return "iostream> ";
   }
@@ -41,8 +44,8 @@ std::string welcome(ccli::context &cc) {
   return result + "> ";
 }
 
-bool compile() {
-  return exec("g++ tmp.cpp").empty();
+std::string compile() {
+  return exec("g++ tmp.cpp");
 }
 
 std::string execute() {
@@ -51,7 +54,8 @@ std::string execute() {
 
 
 int main(int argc, const char **argv) {
-  ccli::context cc;
+  ccli::history history;
+  ccli::context *cc = new ccli::context;
 
   // Handles Ctrl-C interruption
   struct sigaction act;
@@ -66,6 +70,7 @@ int main(int argc, const char **argv) {
 
   auto state = push_to::mains;
   bool one_command = false;
+  unsigned num_cmds = 0;
   while(1) {
     const char *cmd = readline(welcome(cc).c_str());
 
@@ -79,60 +84,69 @@ int main(int argc, const char **argv) {
     if(!file) throw std::runtime_error("Cannot create file to process");
 
     std::string view = cmd;
-    bool can_compile = false;
+    bool run_cmd = false;
     if(starts_with(view, ":")) {
       // additional commands.
-      if(starts_with(view, ":run") || starts_with(view, ":r")) {
-        can_compile = true;
+      if(equals(view, ":run") || equals(view, ":r")) {
+        run_cmd = true;
 
-      } else if(starts_with(view, ":decl") || starts_with(view, ":d")) {
+      } else if(equals(view, ":decl") || equals(view, ":d")) {
         state = push_to::decls;
 
-      } else if(starts_with(view, ":enddecl") || starts_with(view, ":ed")) {
+      } else if(equals(view, ":enddecl") || equals(view, ":ed")) {
         state = push_to::mains;
 
-      } else if(starts_with(view, ":include") || starts_with(view, ":in")) {
+      } else if(equals(view, ":include") || equals(view, ":in")) {
         state = push_to::includes;
 
-      } else if(starts_with(view, ":endinclude") || starts_with(view, ":ein")) {
+      } else if(equals(view, ":endinclude") || equals(view, ":ein")) {
         state = push_to::mains;
 
-      } else if(starts_with(view, ":only") || starts_with(view, ":on")) {
+      } else if(equals(view, ":only") || equals(view, ":on")) {
         state = push_to::decls;
         one_command = true;
 
-      } else if(starts_with(view, ":ls")) {
-        std::cout << cc.get_content();
+      } else if(equals(view, ":ls")) {
+        std::cout << cc->get_content();
       
-      } else if(starts_with(view, ":undo")) {
-        
+      } else if(equals(view, ":quit") || equals(view, ":q")) {
+        exit(0);
 
-      } else if(starts_with(view, ":clearmains") || starts_with(view, ":cm")) {
-        cc.clear_mains();
+      } else if(equals(view, ":undo") || equals(view, ":u")) {
+        assert(cc); delete cc;
+        cc = history.get_history(1);
+        num_cmds = (num_cmds)? num_cmds-1: num_cmds;
 
-      } else if(starts_with(view, ":cleardecls") || starts_with(view, "cd")) {
-        cc.clear_decls();
+      } else if(equals(view, ":clearmains") || equals(view, ":cm")) {
+        cc->clear_mains();
 
-      } else if(starts_with(view, ":clearincludes") || starts_with(view, "ci")) {
-        cc.clear_includes();
+      } else if(equals(view, ":cleardecls") || equals(view, ":cd")) {
+        cc->clear_decls();
 
-      } else if(starts_with(view, ":clear") || starts_with(view, ":c")) {
-        cc.clear_mains();
-        cc.clear_decls();
-        cc.clear_includes();
+      } else if(equals(view, ":clearincludes") || equals(view, ":ci")) {
+        cc->clear_includes();
+
+      } else if(equals(view, ":clear") || equals(view, ":c")) {
+        cc->clear_mains();
+        cc->clear_decls();
+        cc->clear_includes();
 
       }
     } else {
+      history.add_history(cc);
+      num_cmds++;
+
       // adding command to main/decl/includes.
       if(state == push_to::mains) {
-        cc.add_main_cmd(view);
+        cc->add_main_cmd(view);
       } else if(state == push_to::decls) {
-        cc.add_decl_cmd(view);
+        cc->add_decl_cmd(view);
       } else if(state == push_to::includes) {
-        cc.add_include_cmd(view);
+        cc->add_include_cmd(view);
       } else {
         throw std::runtime_error("Cannot decide where to put given command");
       }
+
 
       if(one_command) {
         state = push_to::mains;
@@ -140,20 +154,24 @@ int main(int argc, const char **argv) {
       }
     }
 
-    std::string content = cc.get_content();
+    std::string content = cc->get_content();
 
     file << content;
     file.flush();
 
-    if(can_compile) {
+    if(run_cmd) {
       std::string res = "";
       res = compile();
 
-      if(res.empty()) {
+      if(!res.empty()) {
+        assert(cc); delete cc;
+        cc = history.get_history(num_cmds);
+
       } else {
         res = execute();
       }
       std::cout << res;
+      num_cmds = 0;
     }
     file.close();
 
