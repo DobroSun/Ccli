@@ -39,19 +39,6 @@ static auto is_unary_operator(TokenType c) -> bool {
   return static_cast<i32>(c) < 256 && in(c, "+-");
 }
 
-enum ValueTag {
-  I32, // int
-  U8,  // char
-  U32, // unsigned
-  F32, // float
-  F64  // double
-};
-
-struct Value {
-  i32 integer_value;
-};
-
-
 
 enum Ast_Type {
   Ast_Variable_Type,
@@ -127,100 +114,75 @@ struct Ast_TernaryOperator: public Ast_Expression {
   ast_ptr<Ast_Expression> else_e;
 };
 
-template<class Ret, class T1>
-static auto visit_ast_decl(Ast_Expression &e,
-                           Ret (&proc1)(T1)
-                           ) -> Ret {
-  auto ast_type = e.ast_type;
-  if(ast_type == Ast_Variable_Type) {
-    return proc1(static_cast<Ast_Variable &>(e));
+template<class Ret, class T>
+static auto id(const T &) -> Ret {
+  if constexpr(is_same<Ret, void>::value) {
+    return;
   } else {
-    assert(0);
-    if constexpr(std::is_same<Ret, void>::value) {
-      return;
-    } else {
-      return Ret{};
-    }
+    return Ret{};
   }
 }
 
-template<class Ret, class T1, class T2, class T3, class T4, class T5, class T6, class T7>
-static auto visit_ast_expr(Ast_Expression &e,
-                           Ret (&proc1)(T1),
-                           Ret (&proc2)(T2),
-                           Ret (&proc3)(T3),
-                           Ret (&proc4)(T4),
-                           Ret (&proc5)(T5),
-                           Ret (&proc6)(T6),
-                           Ret (&proc7)(T7)
-                           ) -> Ret {
+
+template<class Ret, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
+static auto visit_ast(Ast_Expression &e,
+                      T1 proc1,
+                      T2 proc2,
+                      T3 proc3,
+                      T4 proc4,
+                      T5 proc5,
+                      T6 proc6,
+                      T7 proc7,
+                      T8 proc8
+                      ) -> Ret {
+
   auto ast_type = e.ast_type;
-  if(ast_type == Ast_Literal_Type) {
-    return proc1(static_cast<Ast_Literal &>(e));
+  switch(ast_type) {
+    case Ast_Literal_Type:
+      return proc1(static_cast<Ast_Literal &>(e));
 
-  } else if(ast_type == Ast_AddOperator_Type) {
-    return proc2(static_cast<Ast_AddOperator &>(e));
+    case Ast_AddOperator_Type:
+      return proc2(static_cast<Ast_AddOperator &>(e));
 
-  } else if(ast_type == Ast_SubOperator_Type) {
-    return proc3(static_cast<Ast_SubOperator &>(e));
+    case Ast_SubOperator_Type:
+      return proc3(static_cast<Ast_SubOperator &>(e));
 
-  } else if(ast_type == Ast_MulOperator_Type) {
-    return proc4(static_cast<Ast_MulOperator &>(e));
+    case Ast_MulOperator_Type:
+      return proc4(static_cast<Ast_MulOperator &>(e));
 
-  } else if(ast_type == Ast_DivOperator_Type) {
-    return proc5(static_cast<Ast_DivOperator &>(e));
+    case Ast_DivOperator_Type:
+      return proc5(static_cast<Ast_DivOperator &>(e));
 
-  } else if(ast_type == Ast_UnaryMinus_Type) {
-    return proc6(static_cast<Ast_UnaryMinus &>(e));
+    case Ast_UnaryMinus_Type:
+      return proc6(static_cast<Ast_UnaryMinus &>(e));
 
-  } else if(ast_type == Ast_TernaryOperator_Type) {
-    return proc7(static_cast<Ast_TernaryOperator &>(e));
+    case Ast_TernaryOperator_Type:
+      return proc7(static_cast<Ast_TernaryOperator &>(e));
 
-  } else {
-    assert(0);
-    if constexpr(std::is_same<Ret, void>::value) {
-      return;
-    } else {
-      return Ret{};
-    }
+    case Ast_Variable_Type:
+      return proc8(static_cast<Ast_Variable &>(e));
   }
+  return id<Ret, u8>(0);
 }
 
+template<class T>
+struct default_deleter {
+  auto operator()(T &o) -> void {
+    return std::default_delete<T>{}(&o);
+  }
+};
 
 static auto destruct(Ast_Expression *expr) -> void {
-  switch(expr->ast_type) {
-    case Ast_Literal_Type: {
-      delete static_cast<Ast_Literal*>(expr);
-    } break;
-
-    case Ast_Variable_Type: {
-      delete static_cast<Ast_Variable *>(expr);
-    } break;
-
-    case Ast_AddOperator_Type: {
-      delete static_cast<Ast_AddOperator *>(expr);
-    } break;
-
-    case Ast_SubOperator_Type: {
-      delete static_cast<Ast_SubOperator *>(expr);
-    } break;
-
-    case Ast_MulOperator_Type: {
-      delete static_cast<Ast_MulOperator *>(expr);
-    } break;
-
-    case Ast_DivOperator_Type: {
-      delete static_cast<Ast_DivOperator *>(expr);
-    } break;
-
-    case Ast_UnaryMinus_Type: {
-      delete static_cast<Ast_UnaryMinus *>(expr);
-    } break;
-
-    case Ast_TernaryOperator_Type: {
-      delete static_cast<Ast_TernaryOperator *>(expr);
-    } break;
-  }
+  visit_ast<void>(*expr,
+                  default_deleter<Ast_Literal>{},
+                  default_deleter<Ast_AddOperator>{},
+                  default_deleter<Ast_SubOperator>{},
+                  default_deleter<Ast_MulOperator>{},
+                  default_deleter<Ast_DivOperator>{},
+                  default_deleter<Ast_UnaryMinus>{},
+                  default_deleter<Ast_TernaryOperator>{},
+                  default_deleter<Ast_Variable>{}
+                  );
 }
 
 static auto parse_expr(u8) -> ast_ptr<Ast_Expression>;
@@ -253,7 +215,7 @@ static auto parse_prefix_expr(Token tok) -> ast_ptr<Ast_Expression> {
   if(type == LiteralTok) {
     // literal.
     auto expr = make_ast<Ast_Literal>(Ast_Literal_Type);
-    expr->value = Value{tok.integer_value};
+    expr->value = tok.val;
     return expr;
 
   } else if(type == IdentifierTok) {
@@ -271,6 +233,7 @@ static auto parse_prefix_expr(Token tok) -> ast_ptr<Ast_Expression> {
 
   } else {
     // unexpected tok.
+    assert(0);
     return {};
   }
 
@@ -359,9 +322,6 @@ static auto parse_expr(u8 current_bp) -> ast_ptr<Ast_Expression> {
     if(is_binary_operator(type)) { // left is part of a binary operator.
       left = parse_binop(std::move(left), type);
 
-    } else if(type == ';') {
-      return left;
-
     } else {
       // unexpected token.
       printf("%c\n", type);
@@ -399,6 +359,8 @@ static auto parse_decl() -> ast_ptr<Ast_Expression> {
 
     expr->name = tok.identifier_value;
     expr->expr = parse_expr(0);
+    
+    assert(next_token().type == ';');
     return expr;
   }
   return {};
@@ -410,64 +372,75 @@ static auto interpret_literal(const Ast_Literal &expr) -> Value {
 }
 
 static auto interpret_addop(const Ast_AddOperator &expr) -> Value {
-  i32 v1 = interpret_expr(*expr.left).integer_value;
-  i32 v2 = interpret_expr(*expr.right).integer_value;
-  return Value {v1 + v2};
+  Value v1 = interpret_expr(*expr.left);
+  Value v2 = interpret_expr(*expr.right);
+  return v1 + v2;
+
 }
 
 static auto interpret_subop(const Ast_SubOperator &expr) -> Value {
-  i32 v1 = interpret_expr(*expr.left).integer_value;
-  i32 v2 = interpret_expr(*expr.right).integer_value;
-  return Value{v1 - v2};
+  Value v1 = interpret_expr(*expr.left);
+  Value v2 = interpret_expr(*expr.right);
+  return v1 - v2;
 }
 
 static auto interpret_mulop(const Ast_MulOperator &expr) -> Value {
-  i32 v1 = interpret_expr(*expr.left).integer_value;
-  i32 v2 = interpret_expr(*expr.right).integer_value;
-  return Value{v1 * v2};
+  Value v1 = interpret_expr(*expr.left);
+  Value v2 = interpret_expr(*expr.right);
+  return v1 * v2;
 }
 
 static auto interpret_divop(const Ast_DivOperator &expr) -> Value {
-  i32 v1 = interpret_expr(*expr.left).integer_value;
-  i32 v2 = interpret_expr(*expr.right).integer_value;
-  return Value{v1 / v2};
+  Value v1 = interpret_expr(*expr.left);
+  Value v2 = interpret_expr(*expr.right);
+  return v1 / v2;
 }
 
 static auto interpret_unary_minus(const Ast_UnaryMinus &expr) -> Value {
-  i32 v = interpret_expr(*expr.operand).integer_value;
-  return Value{ -v };
+  Value v = interpret_expr(*expr.operand);
+  return -v;
 }
 
 static auto interpret_ternaryop(const Ast_TernaryOperator &t) -> Value {
-  i32 condition = interpret_expr(*t.condition).integer_value;
-  i32 then = interpret_expr(*t.then_e).integer_value;
-  i32 else_e = interpret_expr(*t.else_e).integer_value;
-  return Value{(condition) ? then : else_e };
-                
-                
+  Value condition = interpret_expr(*t.condition);
+  Value then_e = interpret_expr(*t.then_e);
+  Value else_e = interpret_expr(*t.else_e);
+  return (to_bool(condition)) ? then_e: else_e;
 }
                         
-
-static auto interpret_expr(Ast_Expression &expr) -> Value {
-  return visit_ast_expr(expr, 
-                        interpret_literal, 
-                        interpret_addop, 
-                        interpret_subop, 
-                        interpret_mulop, 
-                        interpret_divop, 
-                        interpret_unary_minus,
-                        interpret_ternaryop);
-}
-
 static auto interpret_var(const Ast_Variable &decl) -> void {
   printf("Got: type="); print_string(decl.type);
   printf(", ident=");   print_string(decl.name);
-  printf(", value=%i\n", interpret_expr(*decl.expr).integer_value);
+  printf("%s", ", value=");
+  print_value(interpret_expr(*decl.expr));
+  puts("");
+}
+
+static auto interpret_expr(Ast_Expression &expr) -> Value {
+  return visit_ast<Value>(expr, 
+                          interpret_literal, 
+                          interpret_addop, 
+                          interpret_subop, 
+                          interpret_mulop, 
+                          interpret_divop, 
+                          interpret_unary_minus,
+                          interpret_ternaryop,
+                          id<Value, Ast_Variable>
+                          );
 }
 
 static auto interpret_decl(Ast_Expression &expr) -> void {
-  visit_ast_decl(expr,
-                 interpret_var);
+  return visit_ast<void>(expr, 
+                         id<void, Ast_Literal>,
+                         id<void, Ast_AddOperator>,
+                         id<void, Ast_SubOperator>,
+                         id<void, Ast_MulOperator>,
+                         id<void, Ast_DivOperator>,
+                         id<void, Ast_UnaryMinus>,
+                         id<void, Ast_TernaryOperator>,
+                         interpret_var
+                         );
+
 }
 
 
@@ -493,8 +466,11 @@ static auto eval(const char *input) -> void {
 std::string line;
 #endif
 
+
 auto main() -> int {
-  eval("int abc = 10 + 20");
+  eval("/* Hello /* world*/ */ int abc = 10 + .2 / .2;");
+  eval("// int foo = bar;\n char b = '1' + 1.50;"); // '1' is 49, so got: 50.5
+
 
 #if 0
   // @Buggy: Handles Ctrl-C interruption

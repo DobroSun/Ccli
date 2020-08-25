@@ -13,4 +13,18 @@ bool in(T v, const U *array) {
   return false;
 }
 
+template<class T, class B>
+struct is_same;
+
+
+template<class T>
+struct is_same<T,T> {
+  static constexpr bool value = true;
+};
+
+template<class T, class B>
+struct is_same {
+  static constexpr bool value = false;
+};
+
 #endif
